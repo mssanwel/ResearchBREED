@@ -232,8 +232,8 @@ void setup(void) {
                           true); // enabled!
 
 
-  myservo1.attach(14);  // attaches the servo on pin 9 to the servo object
-  myservo2.attach(13);
+  myservo1.attach(6);  // attaches the servo on pin 9 to the servo object
+  myservo2.attach(10);
   
   sensors_event_t accel, gyro, mag, temp;
   lsm6ds.getEvent(&accel, &gyro, &temp);
@@ -263,14 +263,15 @@ void loop() {
 //    myservo1.write(   (defaultX-accel.acceleration.x)*90/4      +90   );
 //    myservo2.write(-(defaultX-accel.acceleration.x)*90/4+90);
 //  }
-    myservo1.write(   ((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)     +90   );
-    myservo2.write(  -((defaultX-accel.acceleration.x)*90/10 -(defaultY-accel.acceleration.y)*90/10)     +90   );
+
+  myservo1.write(   ((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)     +90   );
+  myservo2.write(  -((defaultX-accel.acceleration.x)*90/10 -(defaultY-accel.acceleration.y)*90/10)     +90   );
   Serial.print("Raw value x: ");
   Serial.println(defaultX-accel.acceleration.x);
   Serial.print("Raw value y: ");
   Serial.println(defaultX-accel.acceleration.y);
   Serial.print("Final value: ");
-  Serial.println(((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)     +90);
+  Serial.println(((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)  +90   );
   //digitalWrite(a, HIGH);
   //digitalWrite(b, LOW);
   delay(10);
