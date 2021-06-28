@@ -232,8 +232,8 @@ void setup(void) {
                           true); // enabled!
 
 
-  myservo1.attach(6);  // attaches the servo on pin 9 to the servo object
-  myservo2.attach(10);
+  myservo1.attach(10);  // attaches the servo on pin 9 to the servo object
+  myservo2.attach(6);
   
   sensors_event_t accel, gyro, mag, temp;
   lsm6ds.getEvent(&accel, &gyro, &temp);
