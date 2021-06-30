@@ -1,33 +1,17 @@
-
-#include <SD.h>
-#include <Servo.h>
-#include <SPI.h>
-#include <Wire.h>
-
-
+String incomingByte = ""; // for incoming serial data
 
 void setup() {
-  Serial.begin(9600);
-  Serial1.begin(9600);
-  pinMode(12, OUTPUT);
-  pinMode(8, OUTPUT);
+  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
 }
 
-
-
-
 void loop() {
- 
-  //Serial.println("Running");
+  // send data only when you receive data:
   if (Serial.available() > 0) {
-      String Data=Serial.readString();
-      Serial.println(Data);
-      Serial.println("recieved");
-    
-      }
+    // read the incoming byte:
+    incomingByte = Serial.read();
 
-
-  digitalWrite(12, HIGH);
-  digitalWrite(8, LOW);
-
+    // say what you got:
+    Serial.print("I received: ");
+    Serial.println(incomingByte);
+  }
 }

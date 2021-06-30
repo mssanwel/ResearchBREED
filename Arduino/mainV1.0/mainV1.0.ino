@@ -12,6 +12,8 @@ float defaultX=0;
 float defaultY=0;
 float offX=0;
 float offY=0;
+int motorA=0;
+int motorB=0;
 
 
 // Basic demo for accelerometer, gyro, and magnetometer readings
@@ -264,14 +266,18 @@ void loop() {
 //    myservo2.write(-(defaultX-accel.acceleration.x)*90/4+90);
 //  }
 
-  myservo1.write(   ((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)     +90   );
-  myservo2.write(  -((defaultX-accel.acceleration.x)*90/10 -(defaultY-accel.acceleration.y)*90/10)     +90   );
-  Serial.print("Raw value x: ");
-  Serial.println(defaultX-accel.acceleration.x);
-  Serial.print("Raw value y: ");
-  Serial.println(defaultX-accel.acceleration.y);
-  Serial.print("Final value: ");
-  Serial.println(((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)  +90   );
+  motorA= ((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)+ 90;
+  motorB= -((defaultX-accel.acceleration.x)*90/10 -(defaultY-accel.acceleration.y)*90/10)+ 90;
+  myservo1.write(  motorA  );
+  myservo2.write(  motorB  );
+//  Serial.print("Raw value x: ");
+//  Serial.println(defaultX-accel.acceleration.x);
+//  Serial.print("Raw value y: ");
+//  Serial.println(defaultX-accel.acceleration.y);
+  Serial.print("Final value: motorA ");
+  Serial.println( motorA );
+  Serial.print("Final value: motorB ");
+  Serial.println( motorB );
   //digitalWrite(a, HIGH);
   //digitalWrite(b, LOW);
   delay(10);
