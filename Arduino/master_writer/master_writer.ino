@@ -22,11 +22,11 @@ byte x = 0;
 
 void loop()
 {
+  Serial.println("working");
   Wire.beginTransmission(4); // transmit to device #4
   Wire.write("x is ");        // sends five bytes
   Wire.write(x);              // sends one byte  
   Wire.endTransmission();    // stop transmitting
-  Serial.println("working");
   x++;
   delay(500);
 }
