@@ -39,6 +39,17 @@ Adafruit_ISM330DHCX lsm6ds;
 #include <Adafruit_LIS3MDL.h>
 Adafruit_LIS3MDL lis3mdl;
 
+#include <STM32SD.h>
+
+// If SD card slot has no detect pin then define it as SD_DETECT_NONE
+// to ignore it. One other option is to call 'SD.begin()' without parameter.
+#ifndef SD_DETECT_PIN
+#define SD_DETECT_PIN SD_DETECT_NONE
+#endif
+
+File dataFile;
+
+
 void setup(void) {
   Serial.begin(9600);
   while (!Serial)
@@ -244,7 +255,34 @@ void setup(void) {
 
   pinMode(a, OUTPUT); //IN2
   pinMode(b, OUTPUT); //IN1
-  
+
+
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+
+  Serial.print("Initializing SD card...");
+  // see if the card is present and can be initialized:
+  while (!SD.begin(SD_DETECT_PIN))
+  {
+    delay(10);
+  }
+  delay(100);
+  Serial.println("card initialized.");
+
+  // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+  dataFile = SD.open("datalogFish.txt", FILE_WRITE);
+  // if the file is available, seek to last position
+  if (dataFile) {
+    dataFile.seek(dataFile.size());
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error opening datalog.txt");
+  }
 }
 
 void loop() {
@@ -281,4 +319,39 @@ void loop() {
   //digitalWrite(a, HIGH);
   //digitalWrite(b, LOW);
   delay(10);
+
+
+   // make a string for assembling the data to log:
+  String dataString = "";
+
+  // read sensors and append to the string:
+  
+    String angleValueMotorA= String(motorA);
+    dataString += angleValueMotorA;
+    dataString += ",";
+    String angleValueMotorB= String(motorB);
+    dataString += angleValueMotorB;
+    dataString += ",";
+    String rawValueX= String(defaultX-accel.acceleration.x);
+    dataString += rawValueX;
+    dataString += ",";
+    String rawValueY= String(defaultX-accel.acceleration.y);
+    dataString += rawValueX;
+    //dataString += ",";
+    
+  
+
+
+  // if the file is available, write to it:  
+  if (dataFile) {
+    dataFile.println(dataString);
+    dataFile.flush(); // use flush to ensure the data written
+    // print to the serial port too:
+    Serial.println(dataString);
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error on datalog.txt file handle");
+  }
+  delay(100);
 }
