@@ -18,13 +18,13 @@ int max_range = 9;
 int mid_range = 4;
 
 //Communication
-int num = 0;
-char cmd[11];    //to store the signal from transmitter
+
 int s1, s2;
 bool check;
 char incomingByte;
 String w;
-String letter;
+String char1, char2, char3, char4;
+int val1 = 0, val2 = 0, val3 = 0, val4 = 0;
 
 //Motor
 unsigned int pwm_Pin = 9;
@@ -66,7 +66,8 @@ void setup() {
   //Initialize Serial
   Serial.begin(9600, SERIAL_8O1);
   Serial1.begin(9600);
-  while (!Serial.read()); //Wait for Serial to initialize
+  while (!Serial.read());
+  while (!Serial1.read()); //Wait for Serial to initialize
 
   //Initialize Servo
   pinMode(servoPin1, OUTPUT);
@@ -94,11 +95,12 @@ void loop() {
   
   
   if (Serial1.available() > 0) {  //if bytes available to read in the buffer
-    Serial.print("I'm receiving: ");
+    Serial.println("I'm receiving: ");
     
     // read the incoming byte:
     incomingByte = Serial1.read();
     Serial.print(incomingByte);
+    char cmd[11];    //to store the signal from transmitter
     int siglen = 0;  //to store the length of the incoming signal
     while (incomingByte != '?' and siglen<11) {  //read char by char until we know the end of signal is reached indicated by the identifier '?'
       cmd[siglen] = incomingByte;
@@ -106,8 +108,9 @@ void loop() {
       incomingByte = Serial1.read();
       Serial.print(incomingByte);
     }
-    Serial.println();
-    check = checkSum(incomingByte, siglen, cmd);
+    //Serial.println();
+    //check = checkSum(incomingByte, siglen, cmd);
+    check= true;
     Serial.print("Checksum value is: ");
     Serial.println(check);
     
@@ -118,47 +121,61 @@ void loop() {
 
       //In incoming communication message: array[0] is 'R' or 'U' or 'T' or 'P' - convert to string, array[1:] are the numbers - convert to integer
       w = String(cmd);
-      letter = String(w[0]);
-      num = String(w.substring(1, 2)).toInt();
+      Serial.print("w= ");
+      Serial.println(w);
+      char1 = String(w[0]);
+      val1 = String(w.substring(1, 2)).toInt();
+      char2 = String(w[2]);
+      val2 = String(w.substring(3, 4)).toInt();
+      char3 = String(w[4]);
+      val3 = String(w.substring(5, 6)).toInt();
+      char4 = String(w[6]);
+      val4 = String(w.substring(7, 8)).toInt();
+
+
+      if (char1 == "R") { //for turning the fins left and right (servo motors turn in opposite directions)
+        if (val1 >= min_range && val1 < mid_range) {
+          s1 = map(val1, min_range, mid_range - 1, min_angle, mid_angle); //left
+          s2 = map(val1, min_range, mid_range - 1, max_angle, mid_angle);
+        }
+        else if (val1 > mid_range + 1 && val1 <= max_range) { //right
+          s1 = map(val1, mid_range + 2, max_range, mid_angle, max_angle);
+          s2 = map(val1, mid_range + 2, max_range, mid_angle, min_angle);
+        }
+        else if (val1 >= 4 and val1 <= 5) { //no movement
+          s1 = 90;
+          s2 = 90;
+        }
+      }
+
+      if (char2 == "U") { //for moving the fins up and down (servo motors turn in same directions)
+        if (val2 >= 0 && val2 < 4) {
+          s1 = map(val2, min_range, mid_range - 2, min_angle, mid_angle); //left
+          s2 = map(val2, min_range, mid_range - 1, min_angle, mid_angle);
+        }
+        else if (val2 > 5 && val2 <= 9) { //right
+          s1 = map(val2, mid_range + 2, max_range, mid_angle, max_angle);
+          s2 = map(val2, mid_range + 2, max_range, mid_angle, max_angle);
+        }
+        else if (val2 >= 4 and val2 <= 5) { //no movement
+          s1 = 90;
+          s2 = 90;
+        }
+      }
       
-      if (letter == "T") {
-        turnVal = num; // tail turning signal
+      if (char3 == "T") {
+        turnVal = val3; // tail turning signal
       }
-      else if (letter == "P") {
-        power = num ; // power signal
+      else if (char4 == "P") {
+        power = val4 ; // power signal
       }
-      else if (letter == "R") { //for turning the fins left and right (servo motors turn in opposite directions)
-        if (num >= min_range && num < mid_range) {
-          s1 = map(num, min_range, mid_range - 1, min_angle, mid_angle); //left
-          s2 = map(num, min_range, mid_range - 1, max_angle, mid_angle);
-        }
-        else if (num > mid_range + 1 && num <= max_range) { //right
-          s1 = map(num, mid_range + 2, max_range, mid_angle, max_angle);
-          s2 = map(num, mid_range + 2, max_range, mid_angle, min_angle);
-        }
-        else if (num >= 4 and num <= 5) { //no movement
-          s1 = 90;
-          s2 = 90;
-        }
-      }
-      else if (letter == "U") { //for moving the fins up and down (servo motors turn in same directions)
-        if (num >= 0 && num < 4) {
-          s1 = map(num, min_range, mid_range - 2, min_angle, mid_angle); //left
-          s2 = map(num, min_range, mid_range - 1, min_angle, mid_angle);
-        }
-        else if (num > 5 && num <= 9) { //right
-          s1 = map(num, mid_range + 2, max_range, mid_angle, max_angle);
-          s2 = map(num, mid_range + 2, max_range, mid_angle, max_angle);
-        }
-        else if (num >= 4 and num <= 5) { //no movement
-          s1 = 90;
-          s2 = 90;
-        }
-      }
+      
+      
       
       
       
       //Send PWM signal to motor
+      motor_Pwm = (power/9)*255;
       analogWrite (pwm_Pin, motor_Pwm);
       
      
@@ -176,37 +193,59 @@ void loop() {
       // CAUTION: Fish will turn on after kill switch activated once if signal is restored and checksum is passed
       killswitch();
       Serial.println();
-      Serial.print("The character is: ");
-      Serial.println(letter);
-      Serial.print("The number for movement is: ");
-      Serial.println(num);
+      Serial.print("The message is: ");
+      Serial.println(w);
+      
+      Serial.print("The character 1 is: ");
+      Serial.println(char1);
+      Serial.print("Value 1 is: ");
+      Serial.println(val1);
+      Serial.print("The character 2 is: ");
+      Serial.println(char2);
+      Serial.print("Value 2 is: ");
+      Serial.println(val2);
+      Serial.print("The character 3 is: ");
+      Serial.println(char3);
+      Serial.print("Value 3 is: ");
+      Serial.println(val3);
+      Serial.print("The character 4 is: ");
+      Serial.println(char4);
+      Serial.print("Value 4 is: ");
+      Serial.println(val4);
+      
       Serial.print("motor pwm: ");
       Serial.println(motor_Pwm);
+      Serial.print("turn Val: ");
+      Serial.println(turnVal);
       Serial.print("output to servo1: ");
       Serial.println(s1);
       Serial.print("output to servo2: ");
       Serial.println(s2);
+      Serial.println();
 }
 
 
 void killswitch(){
    if (millis() - killTimer > 3000) {
-    analogWrite (pwm_Pin, 0); 
+    analogWrite (pwm_Pin, 0);
+    Serial.println("Kill switch activated"); 
   }
 }
 
 //function for check sum
 bool checkSum(char incomingByte, int siglen, char cmd[]) {
-    String numcheck = String(cmd[2]) + String(cmd[3]) + String(cmd[4]);
-    int number = numcheck.toInt();
-    if (cmd[0] + cmd[1] == number) {
-      Serial.print("Inside the array there is: ");
-      for (int i = 0; i < 2; i++) {
-        Serial.print(cmd[i]);
-      }
-      check = true;
-    } else {
-      check = false;
-    }
-    return check;
+  check = false;
+  int cSum=0;
+  for (int c=0; c<8; c++){
+    cSum+=cmd[c];
+  }
+  String numcheck = String(cmd[8]) + String(cmd[9]) + String(cmd[10]);
+  int number = numcheck.toInt();
+  Serial.println("Csum & number: ");
+  Serial.println(cSum);
+  Serial.println(number);
+  if (cSum == number) {
+    check = true;
+  }
+  return check;
 }
