@@ -21,10 +21,11 @@ int mid_range = 4;
 
 int s1, s2;
 bool check;
-char incomingByte;
+char incomingByte ='0';
 String w;
 String char1, char2, char3, char4;
 int val1 = 0, val2 = 0, val3 = 0, val4 = 0;
+float power = 0;          //Stores power value from controller
 
 //Motor
 unsigned int pwm_Pin = 9;
@@ -46,7 +47,7 @@ double angularVelocity[3] = {0, 0, 0};
 int turnVal = 5;        //Stores commmand value for control left and right. values 1-4 are left, 5 is straight, 6-9 are right
 int oldTurnVal = 5;
 int encoderVal = 0;         //stores value of encoder at any given time. Updates from interrupt.
-int power = 9;          //Stores power value from controller
+
 int oldPower = 5;
 long int tailDelay1 = 2000;
 int encoderPin0   =  29;
@@ -97,10 +98,12 @@ void loop() {
   if (Serial1.available() > 0) {  //if bytes available to read in the buffer
     Serial.println("I'm receiving: ");
     
-    // read the incoming byte:
-    incomingByte = Serial1.read();
+    // waiting for the start bit 'P':
+    while (incomingByte != 'R'){
+      incomingByte = Serial1.read();
+    }
     Serial.print(incomingByte);
-    char cmd[11];    //to store the signal from transmitter
+    char cmd[12];    //to store the signal from transmitter
     int siglen = 0;  //to store the length of the incoming signal
     while (incomingByte != '?' and siglen<11) {  //read char by char until we know the end of signal is reached indicated by the identifier '?'
       cmd[siglen] = incomingByte;
@@ -108,9 +111,14 @@ void loop() {
       incomingByte = Serial1.read();
       Serial.print(incomingByte);
     }
-    //Serial.println();
-    //check = checkSum(incomingByte, siglen, cmd);
-    check= true;
+    //Empty out buffer
+    while (Serial1.available()>0){
+      Serial1.read();
+    }
+    //As we convert char array to string last element should exist and ideally must be the limiting character
+    cmd[11]='\0';
+    check = checkSum(incomingByte, siglen, cmd);
+    //check= true;
     Serial.print("Checksum value is: ");
     Serial.println(check);
     
@@ -186,7 +194,7 @@ void loop() {
       
     } else {
       //Signal recieved but checksum not passed -> probably got interfered
-      Serial.print("Rejected!");
+      Serial.print("Rejected! ----------------------------------------------------------------------------------------------");
     }
   }
   
