@@ -7,7 +7,7 @@
 Servo servo1;
 Servo servo2;
 int servoPin1 = 5;
-int servoPin2 = 3;
+int servoPin2 = 2;
 int initial1 = 90;
 int initial2 = 90;
 int min_angle = 0;
@@ -19,7 +19,7 @@ int mid_range = 4;
 
 //Communication
 
-int s1, s2;
+float s1, s2;
 bool check;
 char incomingByte ='0';
 String w;
@@ -143,35 +143,9 @@ void loop() {
       val4 = String(w.substring(7, 8)).toInt();
 
 
-      if (char1 == "R") { //for turning the fins left and right (servo motors turn in opposite directions)
-        if (val1 >= min_range && val1 < mid_range) {
-          s1 = map(val1, min_range, mid_range - 1, min_angle, mid_angle); //left
-          s2 = map(val1, min_range, mid_range - 1, max_angle, mid_angle);
-        }
-        else if (val1 > mid_range + 1 && val1 <= max_range) { //right
-          s1 = map(val1, mid_range + 2, max_range, mid_angle, max_angle);
-          s2 = map(val1, mid_range + 2, max_range, mid_angle, min_angle);
-        }
-        else if (val1 >= 4 and val1 <= 5) { //no movement
-          s1 = 90;
-          s2 = 90;
-        }
-      }
-
-      if (char2 == "U") { //for moving the fins up and down (servo motors turn in same directions)
-        if (val2 >= 0 && val2 < 4) {
-          s1 = map(val2, min_range, mid_range - 2, min_angle, mid_angle); //left
-          s2 = map(val2, min_range, mid_range - 1, min_angle, mid_angle);
-        }
-        else if (val2 > 5 && val2 <= 9) { //right
-          s1 = map(val2, mid_range + 2, max_range, mid_angle, max_angle);
-          s2 = map(val2, mid_range + 2, max_range, mid_angle, max_angle);
-        }
-        else if (val2 >= 4 and val2 <= 5) { //no movement
-          s1 = 90;
-          s2 = 90;
-        }
-      }
+      //Servo control expression. Linear combination of X and Y component of JoyStick
+      s1= ((4-val1)*90.0/5 +(4-val2)*90.0/5)+ 90.0;
+      s2= ((4-val1)*90.0/5 -(4-val2)*90.0/5)+ 90.0;
       
       if (char3 == "T") {
         turnVal = val3; // tail turning signal
