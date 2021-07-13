@@ -28,8 +28,9 @@ int val1 = 0, val2 = 0, val3 = 0, val4 = 0;
 float power = 0;          //Stores power value from controller
 
 //Motor
-unsigned int pwm_Pin = 9;
-unsigned int motor_Pwm = 0;
+unsigned int pwm_Pin1 = 8;
+unsigned int pwm_Pin2 = 12;
+float motor_Pwm = 0;
 bool red_Flag = LOW;
 bool on = LOW;
 
@@ -79,8 +80,9 @@ void setup() {
   servo2.write(initial2);
 
   //Initialize PWM_pin for motor control 
-  pinMode(pwm_Pin, OUTPUT); // Set pwm pin
- 
+  pinMode(pwm_Pin1, OUTPUT); // Set pwm pin
+  pinMode(pwm_Pin2, OUTPUT); // Set pwm pin
+  
   //Initialize timer
   killTimer = millis();
 
@@ -174,7 +176,7 @@ void loop() {
       if (char3 == "T") {
         turnVal = val3; // tail turning signal
       }
-      else if (char4 == "P") {
+      if (char4 == "P") {
         power = val4 ; // power signal
       }
       
@@ -183,9 +185,9 @@ void loop() {
       
       
       //Send PWM signal to motor
-      motor_Pwm = (power/9)*255;
-      analogWrite (pwm_Pin, motor_Pwm);
-      
+      motor_Pwm = (power*255)/9.0;
+      analogWrite (pwm_Pin1, motor_Pwm);
+      analogWrite (pwm_Pin2, LOW);
      
       //Servo motor angle is set
       servo1.write(s1);
@@ -235,7 +237,7 @@ void loop() {
 
 void killswitch(){
    if (millis() - killTimer > 3000) {
-    analogWrite (pwm_Pin, 0);
+    analogWrite (pwm_Pin1, 0);
     Serial.println("Kill switch activated"); 
   }
 }
