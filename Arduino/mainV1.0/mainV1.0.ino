@@ -14,7 +14,7 @@ float offX=0;
 float offY=0;
 int motorA=0;
 int motorB=0;
-
+long int timer=0;
 
 // Basic demo for accelerometer, gyro, and magnetometer readings
 // from the following Adafruit ST Sensor combo boards:
@@ -52,9 +52,9 @@ File dataFile;
 
 void setup(void) {
   Serial.begin(9600);
-  while (!Serial)
-    delay(10); // will pause Zero, Leonardo, etc until serial console opens
-
+  //while (!Serial)
+  //  delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+  delay(1000);
   Serial.println("Adafruit LSM6DS+LIS3MDL test!");
 
   bool lsm6ds_success, lis3mdl_success;
@@ -257,11 +257,9 @@ void setup(void) {
   pinMode(b, OUTPUT); //IN1
 
 
-  // Open serial communications and wait for port to open:
+  // Open Serial communications and wait for port to open:
   Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
+  
 
   Serial.print("Initializing SD card...");
   // see if the card is present and can be initialized:
@@ -274,7 +272,19 @@ void setup(void) {
 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
-  dataFile = SD.open("datalogFish.txt", FILE_WRITE);
+
+  char filename[15];
+  strcpy(filename, "/datalogFish00.txt");
+  for (uint8_t i = 0; i < 100; i++) {
+    filename[12] = '0' + i/10;
+    filename[13] = '0' + i%10;
+    // create if does not exist, do not open existing, write, sync after write
+    if (! SD.exists(filename)) {
+      break;
+    }
+  }
+  
+  dataFile = SD.open(filename, FILE_WRITE);
   // if the file is available, seek to last position
   if (dataFile) {
     dataFile.seek(dataFile.size());
@@ -283,12 +293,23 @@ void setup(void) {
   else {
     Serial.println("error opening datalog.txt");
   }
+  if (dataFile) {
+    dataFile.println("Start of File");
+//    dataFile.print(String(defaultX));
+//    dataFile.print(",");
+//    dataFile.println(String(defaultY));
+    dataFile.flush(); // use flush to ensure the data written
+    // print to the serial port too:
+  }
+  // initialize digital pin LED_BUILTIN as an output.
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
 
   
-
+  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
+  //delay(10);
   //  /* Get new normalized sensor events */
   
   sensors_event_t accel, gyro, mag, temp;
@@ -325,23 +346,35 @@ void loop() {
   String dataString = "";
 
   // read sensors and append to the string:
-  
-    String angleValueMotorA= String(motorA);
-    dataString += angleValueMotorA;
+    timer=millis();
+    dataString += String(timer);
     dataString += ",";
-    String angleValueMotorB= String(motorB);
-    dataString += angleValueMotorB;
+    dataString += String(motorA);
     dataString += ",";
-    String rawValueX= String(defaultX-accel.acceleration.x);
-    dataString += rawValueX;
+    dataString += String(motorB);
     dataString += ",";
-    String rawValueY= String(defaultX-accel.acceleration.y);
-    dataString += rawValueX;
-    //dataString += ",";
-    
+    dataString += String(accel.acceleration.x);
+    dataString += ",";
+    dataString += String(accel.acceleration.y);
+    dataString += ",";
+    dataString += String(accel.acceleration.y);
+    dataString += ",";
+    dataString += String(gyro.gyro.x);
+    dataString += ",";
+    dataString += String(gyro.gyro.y);
+    dataString += ",";
+    dataString += String(gyro.gyro.y);
+    dataString += ",";
+    dataString += String(mag.magnetic.x);
+    dataString += ",";
+    dataString += String(mag.magnetic.y);
+    dataString += ",";
+    dataString += String(mag.magnetic.z);
+    dataString += ",";
   
 
-
+  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage LOW
+  //delay(10);
   // if the file is available, write to it:  
   if (dataFile) {
     dataFile.println(dataString);
@@ -353,5 +386,6 @@ void loop() {
   else {
     Serial.println("error on datalog.txt file handle");
   }
-  delay(100);
+                       // wait for a second
+  
 }

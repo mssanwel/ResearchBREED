@@ -45,7 +45,7 @@ int downbutton = 4;
 //Button default values
 int xMap, yMap;
 int tMap = 5;         //default value of turnVal
-int pMap = 5;         //default value of power
+int pMap = 0;         //default value of power
 
 //declare Funduino joystick
 int sensorValueX = analogRead(A0);    
