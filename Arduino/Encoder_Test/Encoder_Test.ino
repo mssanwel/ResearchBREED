@@ -10,7 +10,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("Serial Port Initialized!");
-  for(int encoderPin = 22;encoderPin <= 31;encoderPin ++){   //absolute encoder pin setup
+  for(int encoderPin = 22; encoderPin <= 41; encoderPin = encoderPin + 2){   //absolute encoder pin setup
     pinMode(encoderPin,INPUT_PULLUP) ; 
   }
   Serial.println("Encoder Pins Initialized!");
@@ -22,13 +22,12 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  int x = PINA; 
-  int y = PINB;
+  //int x = PINA; 
+  //int y = PINB;
   int a[10];
   int b[10];
-  for(int n=0; n<9; n=n+2){
+  for(int n=0; n<10; n++){
     a[n] = !digitalRead(22+2*n);
-    a[n+1] = !digitalRead(22+2*n+1);
     Serial.println(n);
   }
   b[9] = a[9];

@@ -47,14 +47,26 @@ Adafruit_LIS3MDL lis3mdl;
 #define SD_DETECT_PIN SD_DETECT_NONE
 #endif
 
+//Bus
+char incomingByte ='0';
+String w="";
+String char1="";
+int val1=0;
+String char2="";
+int val2=0;
+String char3="";
+int val3=0;
+
 File dataFile;
 
 
 void setup(void) {
-  Serial.begin(9600);
-  while (!Serial)
-    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-  //delay(1000);
+  
+//  while (!Serial)
+//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+//  delay(1000);
+//  Serial.begin(9600);
+//  
   Serial.println("Adafruit LSM6DS+LIS3MDL test!");
 
   bool lsm6ds_success, lis3mdl_success;
@@ -258,7 +270,7 @@ void setup(void) {
 
 
   // Open Serial communications and wait for port to open:
-  Serial.begin(9600);
+  //Serial.begin(9600);
   
 
   Serial.print("Initializing SD card...");
@@ -303,6 +315,9 @@ void setup(void) {
   }
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
+
+  Wire.begin(4);                // join i2c bus with address #4
+  Wire.onReceive(receiveEvent); // register event
 }
 
 void loop() {
@@ -327,52 +342,65 @@ void loop() {
 
   motorA= ((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)+ 90;
   motorB= -((defaultX-accel.acceleration.x)*90/10 -(defaultY-accel.acceleration.y)*90/10)+ 90;
-  myservo1.write(  motorA  );
-  myservo2.write(  motorB  );
+//  myservo1.write(  motorA  );
+//  myservo2.write(  motorB  );
 //  Serial.print("Raw value x: ");
 //  Serial.println(defaultX-accel.acceleration.x);
 //  Serial.print("Raw value y: ");
 //  Serial.println(defaultX-accel.acceleration.y);
-  Serial.print("Final value: motorA ");
-  Serial.println( motorA );
-  Serial.print("Final value: motorB ");
-  Serial.println( motorB );
+//  Serial.print("Final value: motorA ");
+//  Serial.println( motorA );
+//  Serial.print("Final value: motorB ");
+//  Serial.println( motorB );
   //digitalWrite(a, HIGH);
   //digitalWrite(b, LOW);
-  delay(10);
+  //delay(10);
 
 
    // make a string for assembling the data to log:
   String dataString = "";
-
-  // read sensors and append to the string:
-    timer=millis();
-    dataString += String(timer);
-    dataString += ",";
-    dataString += String(motorA);
-    dataString += ",";
-    dataString += String(motorB);
-    dataString += ",";
-    dataString += String(accel.acceleration.x);
-    dataString += ",";
-    dataString += String(accel.acceleration.y);
-    dataString += ",";
-    dataString += String(accel.acceleration.y);
-    dataString += ",";
-    dataString += String(gyro.gyro.x);
-    dataString += ",";
-    dataString += String(gyro.gyro.y);
-    dataString += ",";
-    dataString += String(gyro.gyro.y);
-    dataString += ",";
-    dataString += String(mag.magnetic.x);
-    dataString += ",";
-    dataString += String(mag.magnetic.y);
-    dataString += ",";
-    dataString += String(mag.magnetic.z);
-    dataString += ",";
   
-
+  char1 = String(w[0]);
+  val1 = String(w.substring(1, 2)).toInt();
+  char2 = String(w[2]);
+  val2 = String(w.substring(3, 4)).toInt();
+  char3 = String(w[4]);
+  val3 = String(w.substring(5, w.length()-1)).toInt();
+  
+  
+  // read sensors and append to the string:
+  timer=millis();
+  dataString += String(timer);
+  dataString += ",";
+  dataString += String(motorA);
+  dataString += ",";
+  dataString += String(motorB);
+  dataString += ",";
+  dataString += String(accel.acceleration.x);
+  dataString += ",";
+  dataString += String(accel.acceleration.y);
+  dataString += ",";
+  dataString += String(accel.acceleration.z);
+  dataString += ",";
+  dataString += String(gyro.gyro.x);
+  dataString += ",";
+  dataString += String(gyro.gyro.y);
+  dataString += ",";
+  dataString += String(gyro.gyro.z);
+  dataString += ",";
+  dataString += String(mag.magnetic.x);
+  dataString += ",";
+  dataString += String(mag.magnetic.y);
+  dataString += ",";
+  dataString += String(mag.magnetic.z);
+  dataString += ",";
+  dataString += String(val1);
+  dataString += ",";
+  dataString += String(val2);
+  dataString += ",";
+  dataString += String(val3);
+  dataString += ",";
+  
   digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage LOW
   //delay(10);
   // if the file is available, write to it:  
@@ -380,12 +408,39 @@ void loop() {
     dataFile.println(dataString);
     dataFile.flush(); // use flush to ensure the data written
     // print to the serial port too:
-    Serial.println(dataString);
+    //Serial.println(dataString);
   }
   // if the file isn't open, pop up an error:
   else {
     Serial.println("error on datalog.txt file handle");
   }
-                       // wait for a second
-  
 }
+
+void receiveEvent(int howMany)
+{
+  while(0 < Wire.available()) // loop through all but the last
+  {
+    char c = Wire.read(); // receive byte as a character
+    Serial.print(c);         // print the character
+  }
+}
+
+//void receiveEvent(int howMany)
+//{
+//  while(Wire.available()<0) // loop through all but the last
+//  {
+//  }
+//  while (incomingByte != 'R'){
+//      incomingByte = Wire.read();
+//  }
+//  
+//  char cmd[12];    //to store the signal from transmitter
+//  int siglen = 0;  //to store the length of the incoming signal
+//  while (incomingByte != '?') {  //read char by char until we know the end of signal is reached indicated by the identifier '?'
+//    cmd[siglen] = incomingByte;
+//    siglen++;
+//    incomingByte = Wire.read();
+//    Serial.print(incomingByte);
+//  }
+//  w = String(cmd);
+//}
