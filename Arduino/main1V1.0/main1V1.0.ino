@@ -333,24 +333,33 @@ void loop() {
 
 
   //Bus master receiver
-  Wire.requestFrom(2, 6);    // request 6 bytes from slave device #8
+  Wire.requestFrom(8, 7);    // request 6 bytes from slave device #8
 
-  char cmd[12];    //to store the signal from transmitter
-  int siglen = 0;  //to store the length of the incoming signal
-  
   while (Wire.available()) { // slave may send less than requested
-    incomingByte = Wire.read();
-    cmd[siglen] = incomingByte;
-    siglen++;
-    Serial.print(incomingByte);
+    char c = Wire.read(); // receive a byte as character
+    Serial.print(c);         // print the character
   }
-  w = String(cmd);
-  char1 = String(w[0]);
-  val1 = String(w.substring(1, 2)).toInt();
-  char2 = String(w[2]);
-  val2 = String(w.substring(3, 4)).toInt();
-  char3 = String(w[4]);
-  val3 = String(w.substring(5, w.length()-1)).toInt();
+
+  
+//  Wire.requestFrom(2, 6);    // request 6 bytes from slave device #8
+//
+//  char cmd[12];    //to store the signal from transmitter
+//  int siglen = 0;  //to store the length of the incoming signal
+//  
+//  while (Wire.available()) { // slave may send less than requested
+//    incomingByte = Wire.read();
+//    cmd[siglen] = incomingByte;
+//    siglen++;
+//    Serial.print(incomingByte);
+//  }
+//  
+//  w = String(cmd);
+//  char1 = String(w[0]);
+//  val1 = String(w.substring(1, 2)).toInt();
+//  char2 = String(w[2]);
+//  val2 = String(w.substring(3, 4)).toInt();
+//  char3 = String(w[4]);
+//  val3 = String(w.substring(5, w.length()-1)).toInt();
   
 
 //  Wire.requestFrom(8, 6);    // request 6 bytes from slave device #8
