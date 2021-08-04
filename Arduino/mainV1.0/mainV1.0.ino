@@ -73,8 +73,13 @@ void setup(void) {
 
   // hardware I2C mode, can pass in address & alt Wire
 
-  lsm6ds_success = lsm6ds.begin_I2C();
-  lis3mdl_success = lis3mdl.begin_I2C();
+
+  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
+  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
+//  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
+//  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
+//  lsm6ds_success = lsm6ds.begin_I2C();
+//  lis3mdl_success = lis3mdl.begin_I2C();
 
   if (!lsm6ds_success){
     Serial.println("Failed to find LSM6DS chip");

@@ -49,12 +49,12 @@ double angularVelocity[3] = {0, 0, 0};
 int turnVal = 5;        //Stores commmand value for control left and right. values 1-4 are left, 5 is straight, 6-9 are right
 int oldTurnVal = 5;
 int encoderVal = 0;         //stores value of encoder at any given time. Updates from interrupt.
-
+float turn_Pwm = 0;         // Pwm value with differential applied
 int oldPower = 5;
 long int tailDelay1 = 2000;
 int encoderPin0   =  29;
-double diff = 1.0;              //to store the differential value corresponding to the signal
-double stepDiff = 0.2;          //sets the differential value
+double diff = 0.5;              //to store the differential value corresponding to the signal
+double stepDiff = 0.1;          //sets the differential value
 int highcutoff, lowcutoff, offset;
 
 //Kill Switch
@@ -159,10 +159,10 @@ void loop() {
       char4 = String(w[6]);
       val4 = String(w.substring(7, 8)).toInt();
 
-
+      float maxAttacAngle=10;
       //Servo control expression. Linear combination of X and Y component of JoyStick
-      s1= ((4-val1)*45.0/5 +(4-val2)*45.0/5)+ 90.0;
-      s2= ((4-val1)*45.0/5 -(4-val2)*45.0/5)+ 90.0;
+      s1= ((4-val1)*maxAttacAngle/5 +(4-val2)*maxAttacAngle/5)+ 90.0;
+      s2= ((4-val1)*maxAttacAngle/5 -(4-val2)*maxAttacAngle/5)+ 90.0;
       
       if (char3 == "T") {
         turnVal = val3; // tail turning signal
@@ -177,8 +177,9 @@ void loop() {
       
       //Send PWM signal to motor
       motor_Pwm = (power*255)/9.0;
-      analogWrite (pwm_Pin1, motor_Pwm);
-      analogWrite (pwm_Pin2, LOW);
+      turn_Pwm = ((power*255)/9.0)*diff;
+//      analogWrite (pwm_Pin1, motor_Pwm);
+//      analogWrite (pwm_Pin2, LOW);
      
       //Servo motor angle is set
       servo1.write(s1);
@@ -199,6 +200,60 @@ void loop() {
       // CAUTION: Fish will turn on after kill switch activated once if signal is restored and checksum is passed
       killswitch();
       encoderRead();
+  
+  
+    // Turning control Left
+    if ((turnVal>=1) and (turnVal<=4)){
+      Serial.println("Turning Left");
+      if ((abs(encoderRawVal-offset)<=359) or (abs(encoderRawVal-offset)>=871)){
+            motor_Pwm = ((power*255)/9.0)*diff;
+      }
+      else{
+        motor_Pwm = (power*255)/9.0;
+      } 
+    }
+
+    
+    // Going Straight
+    else if (turnVal==5){
+      Serial.println("Going straight");
+      motor_Pwm = (power*255)/9.0; //maps the value received (0-9) to (0-255)
+    }
+
+    // Turning control Right
+    else if ((turnVal>=6) and (turnVal<=9)){
+      Serial.println("Turning Right");
+      if ((abs(encoderRawVal-offset)>=364) and (abs(encoderRawVal-offset)<=870)){
+        motor_Pwm = (power*255)/9.0*diff;
+      }
+      else{
+        motor_Pwm = ((power*255)/9.0);
+      }
+    }
+  
+  
+  
+  analogWrite (pwm_Pin1, motor_Pwm);
+  analogWrite (pwm_Pin2, LOW);
+  Serial.print("motor pwm:------------------------->");
+  Serial.println(motor_Pwm);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
       Serial.println();
       Serial.print("The message is: ");
       Serial.println(w);
@@ -246,13 +301,13 @@ void requestEvent()
         slaveMess=String(encoderRawVal)+"?";
         strcpy(message,slaveMess.c_str());
         Wire.write(message);        //Transmit fish state
-        Serial.print("I2C message is: ");
-        Serial.println(message);
 }
 
 void killswitch(){
    if (millis() - killTimer > 3000) {
-    analogWrite (pwm_Pin1, 0);
+    power=0;
+    motor_Pwm = 0;
+    analogWrite(pwm_Pin1, motor_Pwm);
     Serial.println("Kill switch activated"); 
   }
 }

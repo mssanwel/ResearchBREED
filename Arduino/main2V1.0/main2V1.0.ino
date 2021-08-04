@@ -15,6 +15,9 @@ float offY=0;
 int motorA=0;
 int motorB=0;
 long int timer=0;
+//char encoderValue[6];
+String encoderValue="";
+String dataString="";
 
 // Basic demo for accelerometer, gyro, and magnetometer readings
 // from the following Adafruit ST Sensor combo boards:
@@ -61,20 +64,21 @@ File dataFile;
 
 
 void setup(void) {
-  
 //  while (!Serial)
 //    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
 //  delay(1000);
 //  Serial.begin(9600);
-//  
+  
   Serial.println("Adafruit LSM6DS+LIS3MDL test!");
 
   bool lsm6ds_success, lis3mdl_success;
 
   // hardware I2C mode, can pass in address & alt Wire
 
-  lsm6ds_success = lsm6ds.begin_I2C();
-  lis3mdl_success = lis3mdl.begin_I2C();
+  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
+  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
+//  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
+//  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success){
     Serial.println("Failed to find LSM6DS chip");
@@ -273,108 +277,71 @@ void setup(void) {
   //Serial.begin(9600);
   
 
-  Serial.print("Initializing SD card...");
-  // see if the card is present and can be initialized:
-  while (!SD.begin(SD_DETECT_PIN))
-  {
-    delay(10);
-  }
-  delay(100);
-  Serial.println("card initialized.");
+//  Serial.print("Initializing SD card...");
+//  // see if the card is present and can be initialized:
+//  while (!SD.begin(SD_DETECT_PIN))
+//  {
+//    delay(10);
+//  }
+//  delay(100);
+//  Serial.println("card initialized.");
 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
 
-  char filename[15];
-  strcpy(filename, "/datalogFish00.txt");
-  for (uint8_t i = 0; i < 100; i++) {
-    filename[12] = '0' + i/10;
-    filename[13] = '0' + i%10;
-    // create if does not exist, do not open existing, write, sync after write
-    if (! SD.exists(filename)) {
-      break;
-    }
-  }
-  
-  dataFile = SD.open(filename, FILE_WRITE);
-  // if the file is available, seek to last position
-  if (dataFile) {
-    dataFile.seek(dataFile.size());
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error opening datalog.txt");
-  }
-  if (dataFile) {
-    dataFile.println("Start of File");
-//    dataFile.print(String(defaultX));
-//    dataFile.print(",");
-//    dataFile.println(String(defaultY));
-    dataFile.flush(); // use flush to ensure the data written
-    // print to the serial port too:
-  }
+//  char filename[15];
+//  strcpy(filename, "/datalogFish00.txt");
+//  for (uint8_t i = 0; i < 100; i++) {
+//    filename[12] = '0' + i/10;
+//    filename[13] = '0' + i%10;
+//    // create if does not exist, do not open existing, write, sync after write
+//    if (! SD.exists(filename)) {
+//      break;
+//    }
+//  }
+//  
+//  dataFile = SD.open(filename, FILE_WRITE);
+//  // if the file is available, seek to last position
+//  if (dataFile) {
+//    dataFile.seek(dataFile.size());
+//  }
+//  // if the file isn't open, pop up an error:
+//  else {
+//    Serial.println("error opening datalog.txt");
+//  }
+//  if (dataFile) {
+//    dataFile.println("Start of File");
+////    dataFile.print(String(defaultX));
+////    dataFile.print(",");
+////    dataFile.println(String(defaultY));
+//    dataFile.flush(); // use flush to ensure the data written
+//    // print to the serial port too:
+//  }
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
 
   Wire.begin(4);                // join i2c bus with address #4
-  Wire.onReceive(receiveEvent); // register event
+  Wire.onRequest(requestEvent); // register event
 }
 
 void loop() {
 
   
+  
   digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  //delay(10);
+  
   //  /* Get new normalized sensor events */
   
   sensors_event_t accel, gyro, mag, temp;
   lsm6ds.getEvent(&accel, &gyro, &temp);
   lis3mdl.getEvent(&mag);
 
-//  if ((defaultX-accel.acceleration.x)>(0+offX)){
-//    myservo1.write((defaultX-accel.acceleration.x)*90/4+90);
-//    myservo2.write(-(defaultX-accel.acceleration.x)*90/4+90);
-//  }
-//  else if ((defaultX-accel.acceleration.x)<(0-offX)){
-//    myservo1.write(   (defaultX-accel.acceleration.x)*90/4      +90   );
-//    myservo2.write(-(defaultX-accel.acceleration.x)*90/4+90);
-//  }
-
-  motorA= ((defaultX-accel.acceleration.x)*90/10 +(defaultY-accel.acceleration.y)*90/10)+ 90;
-  motorB= -((defaultX-accel.acceleration.x)*90/10 -(defaultY-accel.acceleration.y)*90/10)+ 90;
-//  myservo1.write(  motorA  );
-//  myservo2.write(  motorB  );
-//  Serial.print("Raw value x: ");
-//  Serial.println(defaultX-accel.acceleration.x);
-//  Serial.print("Raw value y: ");
-//  Serial.println(defaultX-accel.acceleration.y);
-//  Serial.print("Final value: motorA ");
-//  Serial.println( motorA );
-//  Serial.print("Final value: motorB ");
-//  Serial.println( motorB );
-  //digitalWrite(a, HIGH);
-  //digitalWrite(b, LOW);
-  //delay(10);
-
-
-   // make a string for assembling the data to log:
+  // make a string for assembling the data to log:
   String dataString = "";
-  
-  char1 = String(w[0]);
-  val1 = String(w.substring(1, 2)).toInt();
-  char2 = String(w[2]);
-  val2 = String(w.substring(3, 4)).toInt();
-  char3 = String(w[4]);
-  val3 = String(w.substring(5, w.length()-1)).toInt();
-  
   
   // read sensors and append to the string:
   timer=millis();
   dataString += String(timer);
-  dataString += ",";
-  dataString += String(motorA);
-  dataString += ",";
-  dataString += String(motorB);
   dataString += ",";
   dataString += String(accel.acceleration.x);
   dataString += ",";
@@ -394,36 +361,29 @@ void loop() {
   dataString += ",";
   dataString += String(mag.magnetic.z);
   dataString += ",";
-  dataString += String(val1);
-  dataString += ",";
-  dataString += String(val2);
-  dataString += ",";
-  dataString += String(val3);
+  dataString += String(encoderValue);
   dataString += ",";
   
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage LOW
-  //delay(10);
-  // if the file is available, write to it:  
-  if (dataFile) {
-    dataFile.println(dataString);
-    dataFile.flush(); // use flush to ensure the data written
-    // print to the serial port too:
-    //Serial.println(dataString);
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error on datalog.txt file handle");
-  }
+  
+  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+
+
+  Serial.println(dataString);
 }
 
-void receiveEvent(int howMany)
-{
-  while(0 < Wire.available()) // loop through all but the last
-  {
-    char c = Wire.read(); // receive byte as a character
-    Serial.print(c);         // print the character
-  }
+void requestEvent() {
+  Wire.write("hello "); // respond with message of 6 bytes
+  // as expected by master
 }
+
+//void requestEvent()
+//{
+//  //Bus operation
+//      //State transmitted from BUS to slave with servo fin connection
+//        slaveMess=dataString;
+//        strcpy(message,slaveMess.c_str());
+//        Wire.write(message);        //Transmit fish state
+//}
 
 //void receiveEvent(int howMany)
 //{

@@ -15,6 +15,8 @@ float offY=0;
 int motorA=0;
 int motorB=0;
 long int timer=0;
+//char encoderValue[6];
+String encoderValue="";
 
 // Basic demo for accelerometer, gyro, and magnetometer readings
 // from the following Adafruit ST Sensor combo boards:
@@ -61,20 +63,22 @@ File dataFile;
 
 
 void setup(void) {
-  
+  delay(3);
 //  while (!Serial)
 //    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
 //  delay(1000);
 //  Serial.begin(9600);
-//  
+  
   Serial.println("Adafruit LSM6DS+LIS3MDL test!");
 
   bool lsm6ds_success, lis3mdl_success;
 
   // hardware I2C mode, can pass in address & alt Wire
 
-  lsm6ds_success = lsm6ds.begin_I2C();
-  lis3mdl_success = lis3mdl.begin_I2C();
+//  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
+//  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
+  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
+  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success){
     Serial.println("Failed to find LSM6DS chip");
@@ -334,32 +338,52 @@ void loop() {
 
   //Bus master receiver
   Wire.requestFrom(8, 7);    // request 6 bytes from slave device #8
-
+  char cmd[8];    //to store the signal from transmitter
+  int siglen = 0;  //to store the length of the incoming signal
+  int endCnt=0;
   while (Wire.available()) { // slave may send less than requested
-    char c = Wire.read(); // receive a byte as character
-    Serial.print(c);         // print the character
+    char incomingByte = Wire.read();
+    if (incomingByte=='?'){
+      endCnt=siglen;
+    }
+    cmd[siglen] = incomingByte;
+    siglen++;
   }
+  cmd[8]='\0';
+  //char cmd2[8];
+  //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
+  //strncpy ( encoderValue, cmd, endCnt );
+  //encoderValue[endCnt]='\0';
+  encoderValue=cmd;
+  Serial.println(encoderValue);
 
-  
-//  Wire.requestFrom(2, 6);    // request 6 bytes from slave device #8
+// Wire.requestFrom(4, 6);    // request 6 bytes from slave device #8
 //
-//  char cmd[12];    //to store the signal from transmitter
-//  int siglen = 0;  //to store the length of the incoming signal
-//  
 //  while (Wire.available()) { // slave may send less than requested
-//    incomingByte = Wire.read();
-//    cmd[siglen] = incomingByte;
-//    siglen++;
-//    Serial.print(incomingByte);
+//    char c = Wire.read(); // receive a byte as character
+//    Serial.print(c);         // print the character
 //  }
 //  
-//  w = String(cmd);
-//  char1 = String(w[0]);
-//  val1 = String(w.substring(1, 2)).toInt();
-//  char2 = String(w[2]);
-//  val2 = String(w.substring(3, 4)).toInt();
-//  char3 = String(w[4]);
-//  val3 = String(w.substring(5, w.length()-1)).toInt();
+//  Wire.requestFrom(4, 30);    // request 6 bytes from slave device #8
+//  char cmd2[30];    //to store the signal from transmitter
+//  int siglen2 = 0;  //to store the length of the incoming signal
+//  int endCnt2=0;
+//  while (Wire.available()) { // slave may send less than requested
+//    char incomingByte2 = Wire.read();
+//    if (incomingByte2=='?'){
+//      endCnt2=siglen2;
+//    }
+//    cmd2[siglen2] = incomingByte2;
+//    siglen2++;
+//  }
+//  cmd2[30]='\0';
+//  //char cmd2[8];
+//  //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
+//  //strncpy ( encoderValue, cmd, endCnt );
+//  //encoderValue[endCnt]='\0';
+//  //encoderValue=cmd;
+//  Serial.println(cmd2);
+
   
 
 //  Wire.requestFrom(8, 6);    // request 6 bytes from slave device #8
@@ -396,14 +420,11 @@ void loop() {
   dataString += ",";
   dataString += String(mag.magnetic.z);
   dataString += ",";
-  dataString += String(val1);
-  dataString += ",";
-  dataString += String(val2);
-  dataString += ",";
-  dataString += String(val3);
+  dataString += String(encoderValue);
   dataString += ",";
   
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage LOW
+  
+  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
 
   
   // if the file is available, write to it:  
@@ -411,7 +432,7 @@ void loop() {
     dataFile.println(dataString);
     dataFile.flush(); // use flush to ensure the data written
     // print to the serial port too:
-    //Serial.println(dataString);
+    Serial.println(dataString);
   }
   // if the file isn't open, pop up an error:
   else {
