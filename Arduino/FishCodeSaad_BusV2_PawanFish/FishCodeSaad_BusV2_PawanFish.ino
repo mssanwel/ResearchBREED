@@ -115,9 +115,9 @@ void setup() {
   
   //Initialize Serial
   Serial.begin(9600, SERIAL_8O1);
-  Serial1.begin(9600);
+  Serial2.begin(9600);
   //while (!Serial.read());
-  //while (!Serial1.read()); //Wait for Serial to initialize
+  //while (!Serial2.read()); //Wait for Serial to initialize
 
   //Initialize Servo
 //  pinMode(servoPin1, OUTPUT);
@@ -172,12 +172,12 @@ void setup() {
 void loop() {
   
   
-  if (Serial1.available() > 0) {  //if bytes available to read in the buffer
+  if (Serial2.available() > 0) {  //if bytes available to read in the buffer
     Serial.println("I'm receiving: ");
     
     // waiting for the start bit 'P':
     while (incomingByte != 'R'){
-      incomingByte = Serial1.read();
+      incomingByte = Serial2.read();
     }
     Serial.print(incomingByte);
     char cmd[12];    //to store the signal from transmitter
@@ -185,12 +185,12 @@ void loop() {
     while (incomingByte != '?' and siglen<11) {  //read char by char until we know the end of signal is reached indicated by the identifier '?'
       cmd[siglen] = incomingByte;
       siglen++;
-      incomingByte = Serial1.read();
+      incomingByte = Serial2.read();
       Serial.print(incomingByte);
     }
     //Empty out buffer
-    while (Serial1.available()>0){
-      Serial1.read();
+    while (Serial2.available()>0){
+      Serial2.read();
     }
     //As we convert char array to string last element should exist and ideally must be the limiting character
     cmd[11]='\0';
@@ -262,7 +262,7 @@ void loop() {
   
     // Turning control Left
     if ((turnVal>=1) and (turnVal<=4)){
-      Serial.println("Turning Left");
+      //Serial.println("Turning Left");
       if ((abs(encoderRawVal-offset)<=359) or (abs(encoderRawVal-offset)>=871)){
             motor_Pwm = ((power*255)/9.0)*diff;
       }
@@ -274,13 +274,13 @@ void loop() {
     
     // Going Straight
     else if (turnVal==5){
-      Serial.println("Going straight");
+      //Serial.println("Going straight");
       motor_Pwm = (power*255)/9.0; //maps the value received (0-9) to (0-255)
     }
 
     // Turning control Right
     else if ((turnVal>=6) and (turnVal<=9)){
-      Serial.println("Turning Right");
+      //Serial.println("Turning Right");
       if ((abs(encoderRawVal-offset)>=364) and (abs(encoderRawVal-offset)<=870)){
         motor_Pwm = (power*255)/9.0*diff;
       }
@@ -293,8 +293,8 @@ void loop() {
   
   analogWrite (pwm_Pin1, motor_Pwm);
   analogWrite (pwm_Pin2, LOW);
-  Serial.print("motor pwm:------------------------->");
-  Serial.println(motor_Pwm);
+  //Serial.print("motor pwm:------------------------->");
+  //Serial.println(motor_Pwm);
 
 
 
@@ -316,34 +316,34 @@ void loop() {
       Serial.print("The message is: ");
       Serial.println(w);
       
-      Serial.print("The character 1 is: ");
-      Serial.println(char1);
-      Serial.print("Value 1 is: ");
-      Serial.println(val1);
-      Serial.print("The character 2 is: ");
-      Serial.println(char2);
-      Serial.print("Value 2 is: ");
-      Serial.println(val2);
-      Serial.print("The character 3 is: ");
-      Serial.println(char3);
-      Serial.print("Value 3 is: ");
-      Serial.println(val3);
-      Serial.print("The character 4 is: ");
-      Serial.println(char4);
-      Serial.print("Value 4 is: ");
-      Serial.println(val4);
+      //Serial.print("The character 1 is: ");
+      //Serial.println(char1);
+      //Serial.print("Value 1 is: ");
+      //Serial.println(val1);
+      //Serial.print("The character 2 is: ");
+      //Serial.println(char2);
+      //Serial.print("Value 2 is: ");
+      //Serial.println(val2);
+      //Serial.print("The character 3 is: ");
+      //Serial.println(char3);
+      //Serial.print("Value 3 is: ");
+      //Serial.println(val3);
+      //Serial.print("The character 4 is: ");
+      //Serial.println(char4);
+      //Serial.print("Value 4 is: ");
+      //Serial.println(val4);
       
-      Serial.print("motor pwm: ");
-      Serial.println(motor_Pwm);
-      Serial.print("turn Val: ");
-      Serial.println(turnVal);
+      //Serial.print("motor pwm: ");
+      //Serial.println(motor_Pwm);
+      //Serial.print("turn Val: ");
+      //Serial.println(turnVal);
       Serial.print("output to servo1: ");
       Serial.println(s1);
       Serial.print("output to servo2: ");
       Serial.println(s2);
-      Serial.print("EncoderValue ---> : ");
-      Serial.println(encoderRawVal);
-      Serial.println();
+      //Serial.print("EncoderValue ---> : ");
+      //Serial.println(encoderRawVal);
+      //Serial.println();
 }
 
 

@@ -14,7 +14,7 @@
 #define IN1_B 8
 
 int maxpower = 255;
-int minpower = 150;
+
 
 int pos_A = 0;
 long prevT_A = 0;
@@ -27,12 +27,12 @@ float eintegral_B = 0;
 
   // PID constants
 float kp_A = 0.5;
-float kd_A = 0.02;
-float ki_A = 0;
+float kd_A = 0;
+float ki_A = 0.1;
 
 float kp_B = 0.5;
-float kd_B = 0.02;
-float ki_B = 0; 
+float kd_B = 0;
+float ki_B = 0.1; 
 
 
   
@@ -57,13 +57,13 @@ void setup() {
 
 
 void loop() {
-  DriveStright(120,120); // stright for 3 meters
-  delay(1000*5);
+  DriveStright(4000,4000); // stright for 3 meters
+  delay(1000*1);
   Serial.print("the position is set");
   Serial.print(pos_A);
   Serial.println(pos_B);
-  DriveStright(-120,-120);
-  delay(1000*5);
+  DriveStright(-4000,-4000);
+  delay(1000*1);
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
@@ -139,7 +139,7 @@ void DriveStright (int target_a, int target_b){
      }
 
      setMotor(dir_A,pwr_A,PWM_A,IN1_A,IN2_A);
-     setMotor(dir_A,pwr_B,PWM_B,IN1_B,IN2_B);
+     setMotor(dir_B,pwr_B,PWM_B,IN1_B,IN2_B);
 
      // store previous error
      eprev_A = e_A;
@@ -153,7 +153,7 @@ void DriveStright (int target_a, int target_b){
      Serial.print(" ");
      Serial.println(pos_B);
 
-     if (fabs(e_A) < 100 and fabs(e_B) < 100 ){  
+     if (fabs(e_A) < 50 and fabs(e_B) < 50 ){  
        break; 
      }
 
