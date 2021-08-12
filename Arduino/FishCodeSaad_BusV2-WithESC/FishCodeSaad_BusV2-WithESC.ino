@@ -122,7 +122,7 @@ void setup() {
 
   //Main motor relative encoder setup
   //Scheduler.startLoop(readEncoder_Main);
-  //attachInterrupt( digitalPinToInterrupt(ENCA), readEncoder_Main, RISING);
+  attachInterrupt( digitalPinToInterrupt(ENCA), readEncoder_Main, RISING);
   
   Serial.println("Encoder Pins Initialized!");
   Serial.println("Setup is complete! Click to begin the program....");
@@ -310,6 +310,8 @@ void loop() {
       Serial.print("EncoderValue ---> : ");
       Serial.println(encoderRawVal);
       Serial.println();
+      Serial.print("Relative Encoder: ---------------------------->");
+      Serial.println(pos_Main);
       //yield();
 }
 
@@ -378,7 +380,7 @@ void readEncoder_Main(){
   else{
     pos_Main--;
   }
-  Serial.print("Relative Encoder: ---------------------------->");
-  Serial.println(pos_Main);
+//  Serial.print("Relative Encoder: ---------------------------->");
+//  Serial.println(pos_Main);
   //yield();
 }

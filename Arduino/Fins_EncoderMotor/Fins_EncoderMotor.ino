@@ -57,13 +57,14 @@ void setup() {
 
 
 void loop() {
-  DriveStright(4000,4000); // stright for 3 meters
-  delay(1000*1);
-  Serial.print("the position is set");
-  Serial.print(pos_A);
-  Serial.println(pos_B);
-  DriveStright(-4000,-4000);
-  delay(1000*1);
+//  DriveStright(4000,4000); // stright for 3 meters
+//  delay(1000*1);
+//  Serial.print("the position is set");
+//  Serial.print(pos_A);
+//  Serial.println(pos_B);
+//  DriveStright(-4000,-4000);
+//  delay(1000*1);
+Serial.println(pos_A);
 }
 
 void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
