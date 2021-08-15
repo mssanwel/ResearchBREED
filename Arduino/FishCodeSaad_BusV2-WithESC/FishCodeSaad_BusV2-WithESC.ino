@@ -8,8 +8,8 @@ byte x=0;
 //Servo
 Servo servo1;
 Servo servo2;
-int servoPin1 = 9;
-int servoPin2 = 10;
+int servoPin1 = 11;
+int servoPin2 = 9;
 int initial1 = 90;
 int initial2 = 90;
 int min_angle = 0;
@@ -85,6 +85,7 @@ Servo   pusherESC;
 #define ENCA 3 // YELLOW
 #define ENCB 2 // WHITE
 volatile int pos_Main = 0;
+int ticRatioMainMotor=500; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -191,7 +192,7 @@ void loop() {
       char4 = String(w[6]);
       val4 = String(w.substring(7, 8)).toInt();
 
-      float maxAttacAngle=10;
+      float maxAttacAngle=30;
       //Servo control expression. Linear combination of X and Y component of JoyStick
       s1= ((4-val1)*maxAttacAngle/5 +(4-val2)*maxAttacAngle/5)+ 90.0;
       s2= ((4-val1)*maxAttacAngle/5 -(4-val2)*maxAttacAngle/5)+ 90.0;
@@ -231,9 +232,13 @@ void loop() {
       
       // CAUTION: Fish will turn on after kill switch activated once if signal is restored and checksum is passed
       killswitch();
-      encoderRead();
-  
-  
+      //encoderRead();
+      int rel_pos_Main=pos_Main;
+      while ((int)rel_pos_Main/ticRatioMainMotor){
+        rel_pos_Main=rel_pos_Main-ticRatioMainMotor;
+      }
+      encoderRawVal=rel_pos_Main;
+    
     // Turning control Left
     if ((turnVal>=1) and (turnVal<=4)){
       Serial.println("Turning Left");
@@ -325,7 +330,7 @@ void requestEvent()
 {
   //Bus operation
       //State transmitted from BUS to slave with servo fin connection
-        slaveMess=String(encoderRawVal)+"?";
+        slaveMess=String(pos_Main)+"?";
         strcpy(message,slaveMess.c_str());
         Wire.write(message);        //Transmit fish state
 }

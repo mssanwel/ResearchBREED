@@ -63,7 +63,7 @@ File dataFile;
 
 
 void setup(void) {
-  delay(3);
+ // delay(3);
 //  while (!Serial)
 //    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
 //  delay(1000);
@@ -337,8 +337,8 @@ void loop() {
 
 
   //Bus master receiver
-  Wire.requestFrom(8, 7);    // request 6 bytes from slave device #8
-  char cmd[8];    //to store the signal from transmitter
+  Wire.requestFrom(8, 10);    // request 6 bytes from slave device #8
+  char cmd[10];    //to store the signal from transmitter
   int siglen = 0;  //to store the length of the incoming signal
   int endCnt=0;
   while (Wire.available()) { // slave may send less than requested
@@ -349,7 +349,7 @@ void loop() {
     cmd[siglen] = incomingByte;
     siglen++;
   }
-  cmd[8]='\0';
+  cmd[9]='\0';
   //char cmd2[8];
   //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
   //strncpy ( encoderValue, cmd, endCnt );
