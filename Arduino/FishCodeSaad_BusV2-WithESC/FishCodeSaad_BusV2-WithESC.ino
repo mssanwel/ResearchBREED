@@ -2,7 +2,7 @@
 #include <Servo.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <Scheduler.h>
+//#include <Scheduler.h>
 
 byte x=0;
 //Servo
@@ -18,6 +18,7 @@ int mid_angle = 90;
 int min_range = 0;
 int max_range = 9;
 int mid_range = 4;
+float maxAttacAngle=40;
 
 //Communication
 
@@ -192,7 +193,7 @@ void loop() {
       char4 = String(w[6]);
       val4 = String(w.substring(7, 8)).toInt();
 
-      float maxAttacAngle=30;
+      
       //Servo control expression. Linear combination of X and Y component of JoyStick
       s1= ((4-val1)*maxAttacAngle/5 +(4-val2)*maxAttacAngle/5)+ 90.0;
       s2= ((4-val1)*maxAttacAngle/5 -(4-val2)*maxAttacAngle/5)+ 90.0;

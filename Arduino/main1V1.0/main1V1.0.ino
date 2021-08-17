@@ -14,6 +14,10 @@ float offX=0;
 float offY=0;
 int motorA=0;
 int motorB=0;
+
+
+
+
 long int timer=0;
 //char encoderValue[6];
 String encoderValue="";
