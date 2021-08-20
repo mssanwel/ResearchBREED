@@ -92,7 +92,11 @@ void setup() {
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW); // Off to indicate still in setup
   
-  //Initialize Serial
+//  //Interrupt pin pullup relative encoder
+  pinMode(ENCA,INPUT_PULLUP);
+//  pinMode(ENCB,INPUT_PULLUP);
+  
+  //Initialize //Serial
   Serial.begin(9600, SERIAL_8O1);
   Serial1.begin(9600);
   //while (!Serial.read());
@@ -182,8 +186,8 @@ void loop() {
 
       //In incoming communication message: array[0] is 'R' or 'U' or 'T' or 'P' - convert to string, array[1:] are the numbers - convert to integer
       w = String(cmd);
-      Serial.print("w= ");
-      Serial.println(w);
+      //Serial.print("w= ");
+      //Serial.println(w);
       char1 = String(w[0]);
       val1 = String(w.substring(1, 2)).toInt();
       char2 = String(w[2]);
@@ -222,7 +226,7 @@ void loop() {
       
     } else {
       //Signal recieved but checksum not passed -> probably got interfered
-      Serial.print("Rejected! ----------------------------------------------------------------------------------------------");
+      //Serial.print("Rejected! ----------------------------------------------------------------------------------------------");
     }
   }
       
@@ -242,7 +246,7 @@ void loop() {
     
     // Turning control Left
     if ((turnVal>=1) and (turnVal<=4)){
-      Serial.println("Turning Left");
+      //Serial.println("Turning Left");
       if ((abs(encoderRawVal-offset)<=359) or (abs(encoderRawVal-offset)>=871)){
             motor_Pwm = ((power*255)/9.0)*diff;
       }
@@ -254,13 +258,13 @@ void loop() {
     
     // Going Straight
     else if (turnVal==5){
-      Serial.println("Going straight");
+      //Serial.println("Going straight");
       motor_Pwm = (power*255)/9.0; //maps the value received (0-9) to (0-255)
     }
 
     // Turning control Right
     else if ((turnVal>=6) and (turnVal<=9)){
-      Serial.println("Turning Right");
+      //Serial.println("Turning Right");
       if ((abs(encoderRawVal-offset)>=364) and (abs(encoderRawVal-offset)<=870)){
         motor_Pwm = (power*255)/9.0*diff;
       }
@@ -277,45 +281,45 @@ void loop() {
   pusherESC.writeMicroseconds(throttle);
 //  Serial.print("motor pwm:------------------------->");
 //  Serial.println(motor_Pwm);
-  Serial.print("Motor Throttle:---------------------------->");
-  Serial.println(throttle);
-
-
-
-
-      
-      Serial.println();
-      Serial.print("The message is: ");
-      Serial.println(w);
-      
-      Serial.print("The character 1 is: ");
-      Serial.println(char1);
-      Serial.print("Value 1 is: ");
-      Serial.println(val1);
-      Serial.print("The character 2 is: ");
-      Serial.println(char2);
-      Serial.print("Value 2 is: ");
-      Serial.println(val2);
-      Serial.print("The character 3 is: ");
-      Serial.println(char3);
-      Serial.print("Value 3 is: ");
-      Serial.println(val3);
-      Serial.print("The character 4 is: ");
-      Serial.println(char4);
-      Serial.print("Value 4 is: ");
-      Serial.println(val4);
-      
-      Serial.print("motor pwm: ");
-      Serial.println(motor_Pwm);
-      Serial.print("turn Val: ");
-      Serial.println(turnVal);
-      Serial.print("output to servo1: ");
-      Serial.println(s1);
-      Serial.print("output to servo2: ");
-      Serial.println(s2);
-      Serial.print("EncoderValue ---> : ");
-      Serial.println(encoderRawVal);
-      Serial.println();
+//  Serial.print("Motor Throttle:---------------------------->");
+//  Serial.println(throttle);
+//
+//
+//
+//
+//      
+//      Serial.println();
+//      Serial.print("The message is: ");
+//      Serial.println(w);
+//      
+//      Serial.print("The character 1 is: ");
+//      Serial.println(char1);
+//      Serial.print("Value 1 is: ");
+//      Serial.println(val1);
+//      Serial.print("The character 2 is: ");
+//      Serial.println(char2);
+//      Serial.print("Value 2 is: ");
+//      Serial.println(val2);
+//      Serial.print("The character 3 is: ");
+//      Serial.println(char3);
+//      Serial.print("Value 3 is: ");
+//      Serial.println(val3);
+//      Serial.print("The character 4 is: ");
+//      Serial.println(char4);
+//      Serial.print("Value 4 is: ");
+//      Serial.println(val4);
+//      
+//      Serial.print("motor pwm: ");
+//      Serial.println(motor_Pwm);
+//      Serial.print("turn Val: ");
+//      Serial.println(turnVal);
+//      Serial.print("output to servo1: ");
+//      Serial.println(s1);
+//      Serial.print("output to servo2: ");
+//      Serial.println(s2);
+//      Serial.print("EncoderValue ---> : ");
+//      Serial.println(encoderRawVal);
+//      Serial.println();
       Serial.print("Relative Encoder: ---------------------------->");
       Serial.println(pos_Main);
       //yield();
@@ -354,9 +358,9 @@ bool checkSum(char incomingByte, int siglen, char cmd[]) {
   }
   String numcheck = String(cmd[8]) + String(cmd[9]) + String(cmd[10]);
   int number = numcheck.toInt();
-  //Serial.println("Csum & number: ");
-  //Serial.println(cSum);
-  //Serial.println(number);
+  ////Serial.println("Csum & number: ");
+  ////Serial.println(cSum);
+  ////Serial.println(number);
   if (cSum == number) {
     check = true;
   }
@@ -369,7 +373,7 @@ void encoderRead(){
   int b[10];
   for(int n=0; n<10; n++){
     a[n] = !digitalRead(22+2*n);
-    Serial.println(n);
+    //Serial.println(n);
   }
   b[9] = a[9];
   for(int i = 1;i<10;i++){
@@ -386,7 +390,7 @@ void readEncoder_Main(){
   else{
     pos_Main--;
   }
-//  Serial.print("Relative Encoder: ---------------------------->");
-//  Serial.println(pos_Main);
+//  //Serial.print("Relative Encoder: ---------------------------->");
+//  //Serial.println(pos_Main);
   //yield();
 }
