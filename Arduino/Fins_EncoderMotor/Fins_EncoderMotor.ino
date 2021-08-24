@@ -1,14 +1,14 @@
 ///Motor Set A
-#define ENCA_A 3 // YELLOW
-#define ENCB_A 2 // WHITE
+#define ENCA_A 18 // YELLOW
+#define ENCB_A 19 // WHITE
 #define PWM_A 5
 #define IN2_A 6
 #define IN1_A 7
 
 
 //Motor Set b
-#define ENCA_B 19// YELLOW
-#define ENCB_B 18 // WHITE
+#define ENCA_B 2// YELLOW
+#define ENCB_B 3 // WHITE
 #define PWM_B 10
 #define IN2_B 9
 #define IN1_B 8
@@ -39,7 +39,7 @@ float ki_B = 0.1;
 void setup() {
   Serial.begin(9600);
   pinMode(ENCA_A,INPUT_PULLUP);
-  pinMode(ENCB_A,INPUT_PULLUP);
+  //pinMode(ENCB_A,INPUT_PULLUP);
   pinMode(PWM_A, OUTPUT);
   pinMode(IN1_A, OUTPUT);
   pinMode(IN2_A, OUTPUT);

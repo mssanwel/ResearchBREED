@@ -19,6 +19,7 @@ void setup() {
 
 void loop() {
   delay(100);
+  Serial.println("Hello");
 }
 
 // function that executes whenever data is requested by master

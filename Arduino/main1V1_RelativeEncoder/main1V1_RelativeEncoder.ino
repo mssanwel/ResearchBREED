@@ -651,7 +651,7 @@ void loop() {
 //  Serial.println(cmd2);
 
   
-
+//
 //  Wire.requestFrom(8, 6);    // request 6 bytes from slave device #8
 //
 //  while (Wire.available()) { // slave may send less than requested
@@ -708,11 +708,11 @@ void loop() {
   
   dataString += String(encoderValue);
   dataString += ",";
-  dataString += String(pos_Main);
-  dataString += ",";
-  
-  Serial.print("Relative Encoder: ---------------------------->");
-  Serial.println(pos_Main);
+//  dataString += String(pos_Main);
+//  dataString += ",";
+//  
+//  Serial.print("Relative Encoder: ---------------------------->");
+//  Serial.println(pos_Main);
   
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
 

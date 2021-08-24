@@ -2,12 +2,14 @@
 #include <Servo.h>
 #include <SPI.h>
 #include <Wire.h>
+//#include <Scheduler.h>
+
 byte x=0;
 //Servo
 Servo servo1;
 Servo servo2;
-int servoPin1 = 5;
-int servoPin2 = 2;
+int servoPin1 = 11;
+int servoPin2 = 9;
 int initial1 = 90;
 int initial2 = 90;
 int min_angle = 0;
@@ -16,6 +18,7 @@ int mid_angle = 90;
 int min_range = 0;
 int max_range = 9;
 int mid_range = 4;
+float maxAttacAngle=40;
 
 //Communication
 
@@ -49,12 +52,12 @@ double angularVelocity[3] = {0, 0, 0};
 int turnVal = 5;        //Stores commmand value for control left and right. values 1-4 are left, 5 is straight, 6-9 are right
 int oldTurnVal = 5;
 int encoderVal = 0;         //stores value of encoder at any given time. Updates from interrupt.
-
+float turn_Pwm = 0;         // Pwm value with differential applied
 int oldPower = 5;
 long int tailDelay1 = 2000;
 int encoderPin0   =  29;
-double diff = 1.0;              //to store the differential value corresponding to the signal
-double stepDiff = 0.2;          //sets the differential value
+double diff = 0.2;              //to store the differential value corresponding to the signal
+double stepDiff = 0.1;          //sets the differential value
 int highcutoff, lowcutoff, offset;
 
 //Kill Switch
@@ -65,11 +68,35 @@ long int busTimer1; //timer for bus transmission to slave with servo fin control
 String slaveMess="";
 char message[20];
 
+//Motor control through ESC Driver
+#define PIN_PUSHERESC       5     // PIN to control ESC, normally the white wire from ESC 
+Servo   pusherESC; 
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////
+ * The following are the setting for the ESC used, for other ESC, just chnage setting according to
+ * ESC Spec
+ *///////////////////////////////////////////////////////////////////////////////////////////////////////
+#define THROTTLE_MIN        1500
+#define THROTTLE_MAX        2000
+#define THROTTLE_BAKE       1000
+// End of ESC setting ///////////////////////////////////////////////////////////////////////////////////
+
+
+//Relative Encoder Main Motor
+//
+#define ENCA 3 // YELLOW
+#define ENCB 2 // WHITE
+volatile int pos_Main = 0;
+int ticRatioMainMotor=10000; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
+
 void setup() {
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW); // Off to indicate still in setup
   
-  //Initialize Serial
+//  //Interrupt pin pullup relative encoder
+  pinMode(ENCA,INPUT_PULLUP);
+//  pinMode(ENCB,INPUT_PULLUP);
+  
+  //Initialize //Serial
   Serial.begin(9600, SERIAL_8O1);
   Serial1.begin(9600);
   //while (!Serial.read());
@@ -91,22 +118,33 @@ void setup() {
   killTimer = millis();
 
   // join i2c bus (address optional for master)
-  Wire.begin();
+  Wire.begin(8);                // join i2c bus with address #8
+  Wire.onRequest(requestEvent);  // register event
 
   //Encoder Setup
   for(int encoderPin = 22; encoderPin <= 41; encoderPin = encoderPin + 2){   //absolute encoder pin setup
     pinMode(encoderPin,INPUT_PULLUP) ; 
   }
+
+  //Main motor relative encoder setup
+  //Scheduler.startLoop(readEncoder_Main);
+  attachInterrupt( digitalPinToInterrupt(ENCA), readEncoder_Main, RISING);
+  
   Serial.println("Encoder Pins Initialized!");
   Serial.println("Setup is complete! Click to begin the program....");
   
-   
+
+  pusherESC.attach(PIN_PUSHERESC);
+  pusherESC.writeMicroseconds(THROTTLE_MIN);
+  Serial.println("Arming........");   // just some display message 
+  delay(500);
+  Serial.println("Arming........After delay");  
+  
   //Setup complete prompt
   digitalWrite(13, HIGH); //To Check if setup complete
   Serial.println("Setup is complete! Click to begin the program....");
   Serial.println("I'm ready for the code!");
 
-  //Serial2.begin(9600);
 }
 
 
@@ -148,8 +186,8 @@ void loop() {
 
       //In incoming communication message: array[0] is 'R' or 'U' or 'T' or 'P' - convert to string, array[1:] are the numbers - convert to integer
       w = String(cmd);
-      Serial.print("w= ");
-      Serial.println(w);
+      //Serial.print("w= ");
+      //Serial.println(w);
       char1 = String(w[0]);
       val1 = String(w.substring(1, 2)).toInt();
       char2 = String(w[2]);
@@ -159,10 +197,10 @@ void loop() {
       char4 = String(w[6]);
       val4 = String(w.substring(7, 8)).toInt();
 
-
+      
       //Servo control expression. Linear combination of X and Y component of JoyStick
-      s1= ((4-val1)*45.0/5 +(4-val2)*45.0/5)+ 90.0;
-      s2= ((4-val1)*45.0/5 -(4-val2)*45.0/5)+ 90.0;
+      s1= ((4-val1)*maxAttacAngle/5 +(4-val2)*maxAttacAngle/5)+ 90.0;
+      s2= ((4-val1)*maxAttacAngle/5 -(4-val2)*maxAttacAngle/5)+ 90.0;
       
       if (char3 == "T") {
         turnVal = val3; // tail turning signal
@@ -177,8 +215,9 @@ void loop() {
       
       //Send PWM signal to motor
       motor_Pwm = (power*255)/9.0;
-      analogWrite (pwm_Pin1, motor_Pwm);
-      analogWrite (pwm_Pin2, LOW);
+      turn_Pwm = ((power*255)/9.0)*diff;
+//      analogWrite (pwm_Pin1, motor_Pwm);
+//      analogWrite (pwm_Pin2, LOW);
      
       //Servo motor angle is set
       servo1.write(s1);
@@ -187,28 +226,10 @@ void loop() {
       
     } else {
       //Signal recieved but checksum not passed -> probably got interfered
-      Serial.print("Rejected! ----------------------------------------------------------------------------------------------");
+      //Serial.print("Rejected! ----------------------------------------------------------------------------------------------");
     }
   }
-      //Bus operation
-      //State transmitted from BUS to slave with servo fin connection
-      if (millis() - busTimer1 > 10) {
-        Wire.beginTransmission(4); // transmit to device #4
-        slaveMess="R" + String(val1) +"U"+ String(val2)+"E"+ String(encoderRawVal)+"?";
-        strcpy(message,slaveMess.c_str());
-        Wire.write(message);        //Transmit Servo fin state
-        Wire.endTransmission();    // stop transmitting
-        busTimer1=millis();
-//        slaveMess="R" + String(val1) +"U"+ String(val2)+"E"+ String(encoderRawVal)+"?";
-//        strcpy(message,slaveMess.c_str());
-        Serial.println(message);
-//      Serial.println("working");
-//      Wire.beginTransmission(4); // transmit to device #4
-//      Wire.write("x is ");        // sends five bytes
-//      Wire.write(x);              // sends one byte  
-//      Wire.endTransmission();    // stop transmitting
-//      x++;
-      }
+      
 
 
       
@@ -216,7 +237,57 @@ void loop() {
       
       // CAUTION: Fish will turn on after kill switch activated once if signal is restored and checksum is passed
       killswitch();
-      encoderRead();
+      //encoderRead();
+      int rel_pos_Main=pos_Main;
+      while ((int)rel_pos_Main/ticRatioMainMotor){
+        rel_pos_Main=rel_pos_Main-ticRatioMainMotor;
+      }
+      encoderRawVal=rel_pos_Main;
+    
+    // Turning control Left
+    if ((turnVal>=1) and (turnVal<=4)){
+      //Serial.println("Turning Left");
+       if ((abs(encoderRawVal-offset)%ticRatioMainMotor)< int(ticRatioMainMotor/2)){
+            motor_Pwm = ((power*255)/9.0)*diff;
+      }
+      else{
+        motor_Pwm = (power*255)/9.0;
+      } 
+    }
+
+    
+    // Going Straight
+    else if (turnVal==5){
+      //Serial.println("Going straight");
+      motor_Pwm = (power*255)/9.0; //maps the value received (0-9) to (0-255)
+    }
+
+    // Turning control Right
+    else if ((turnVal>=6) and (turnVal<=9)){
+      //Serial.println("Turning Right");
+      if ((abs(encoderRawVal-offset)%ticRatioMainMotor)>= int(ticRatioMainMotor/2)){
+        motor_Pwm = (power*255)/9.0*diff;
+      }
+      else{
+        motor_Pwm = ((power*255)/9.0);
+      }
+    }
+  
+  
+  
+  //analogWrite (pwm_Pin1, motor_Pwm);
+  //analogWrite (pwm_Pin2, LOW);
+  int throttle=map(motor_Pwm, 0, 255, THROTTLE_MIN, THROTTLE_MAX);
+  pusherESC.writeMicroseconds(throttle);
+//  Serial.print("motor pwm:------------------------->");
+//  Serial.println(motor_Pwm);
+//  Serial.print("Motor Throttle:---------------------------->");
+//  Serial.println(throttle);
+//
+//
+//
+//
+//      
 //      Serial.println();
 //      Serial.print("The message is: ");
 //      Serial.println(w);
@@ -246,15 +317,34 @@ void loop() {
 //      Serial.println(s1);
 //      Serial.print("output to servo2: ");
 //      Serial.println(s2);
-      Serial.print("EncoderValue ---> : ");
-      Serial.println(encoderRawVal);
-      Serial.println();
+//      Serial.print("EncoderValue ---> : ");
+//      Serial.println(encoderRawVal);
+//      Serial.println();
+      Serial.print("Relative Encoder: ---------------------------->");
+      Serial.println(pos_Main);
+      //yield();
 }
 
 
+//void requestEvent() {
+//  Wire.write("hello "); // respond with message of 6 bytes
+//  // as expected by master
+//}
+
+void requestEvent()
+{
+  //Bus operation
+      //State transmitted from BUS to slave with servo fin connection
+        slaveMess=String(pos_Main)+"?";
+        strcpy(message,slaveMess.c_str());
+        Wire.write(message);        //Transmit fish state
+}
+
 void killswitch(){
    if (millis() - killTimer > 3000) {
-    analogWrite (pwm_Pin1, 0);
+    power=0;
+    motor_Pwm = 0;
+    analogWrite(pwm_Pin1, motor_Pwm);
     Serial.println("Kill switch activated"); 
   }
 }
@@ -268,9 +358,9 @@ bool checkSum(char incomingByte, int siglen, char cmd[]) {
   }
   String numcheck = String(cmd[8]) + String(cmd[9]) + String(cmd[10]);
   int number = numcheck.toInt();
-  //Serial.println("Csum & number: ");
-  //Serial.println(cSum);
-  //Serial.println(number);
+  ////Serial.println("Csum & number: ");
+  ////Serial.println(cSum);
+  ////Serial.println(number);
   if (cSum == number) {
     check = true;
   }
@@ -283,11 +373,24 @@ void encoderRead(){
   int b[10];
   for(int n=0; n<10; n++){
     a[n] = !digitalRead(22+2*n);
-    Serial.println(n);
+    //Serial.println(n);
   }
   b[9] = a[9];
   for(int i = 1;i<10;i++){
     b[9-i] = b[9-i+1]^a[9-i];  // xor
   }
   encoderRawVal = 512.0*b[9]+256.0*b[8]+128.0*b[7]+64.0*b[6]+32.0*b[5]+16.0*b[4]+8.0*b[3]+4.0*b[2]+2.0*b[1]+b[0];
+}
+
+void readEncoder_Main(){
+  int b_A = digitalRead(ENCB);
+  if(b_A > 0){
+    pos_Main++;
+  }
+  else{
+    pos_Main--;
+  }
+//  //Serial.print("Relative Encoder: ---------------------------->");
+//  //Serial.println(pos_Main);
+  //yield();
 }

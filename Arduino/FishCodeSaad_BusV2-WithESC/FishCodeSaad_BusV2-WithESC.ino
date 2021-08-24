@@ -86,7 +86,7 @@ Servo   pusherESC;
 #define ENCA 3 // YELLOW
 #define ENCB 2 // WHITE
 volatile int pos_Main = 0;
-int ticRatioMainMotor=500; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
+int ticRatioMainMotor=10000; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -265,7 +265,7 @@ void loop() {
     // Turning control Right
     else if ((turnVal>=6) and (turnVal<=9)){
       //Serial.println("Turning Right");
-      if ((abs(encoderRawVal-offset)>=364) and (abs(encoderRawVal-offset)<=870)){
+      if ((abs(encoderRawVal-offset)%ticRatioMainMotor)>=int(ticRatioMainMotor/2) and (abs(encoderRawVal-offset)<=870)){
         motor_Pwm = (power*255)/9.0*diff;
       }
       else{
@@ -326,19 +326,19 @@ void loop() {
 }
 
 
-//void requestEvent() {
-//  Wire.write("hello "); // respond with message of 6 bytes
-//  // as expected by master
-//}
-
-void requestEvent()
-{
-  //Bus operation
-      //State transmitted from BUS to slave with servo fin connection
-        slaveMess=String(pos_Main)+"?";
-        strcpy(message,slaveMess.c_str());
-        Wire.write(message);        //Transmit fish state
+void requestEvent() {
+  Wire.write("hello "); // respond with message of 6 bytes
+  // as expected by master
 }
+
+//void requestEvent()
+//{
+//  //Bus operation
+//      //State transmitted from BUS to slave with servo fin connection
+//        slaveMess=String(pos_Main)+"?";
+//        strcpy(message,slaveMess.c_str());
+//        Wire.write(message);        //Transmit fish state
+//}
 
 void killswitch(){
    if (millis() - killTimer > 3000) {
