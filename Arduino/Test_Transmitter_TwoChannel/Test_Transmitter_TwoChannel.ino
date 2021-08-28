@@ -14,6 +14,7 @@ void setup() {
 void loop() {
   //Transmitting
   Serial1.println("Hello\n");
+  Serial.println("Sent");
   delay(100);
 
 

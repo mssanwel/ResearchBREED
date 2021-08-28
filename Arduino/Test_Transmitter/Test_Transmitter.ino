@@ -5,9 +5,11 @@
   https://electropeak.com/learn/
 */
 void setup() {
+  Serial.begin(9600);
   Serial1.begin(9600);
 }
 void loop() {
+  Serial.println("Hello\n");
   Serial1.println("Hello\n");
   delay(100);
 }

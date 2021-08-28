@@ -3,7 +3,7 @@ String incomingByte = ""; // for incoming serial data
 void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
-  Serial2.begin(9600); // opens serial port, sets data rate to 9600 bps
+  Serial.print("Starting: ");
 }
 
 void loop() {
@@ -19,7 +19,4 @@ void loop() {
     Serial.println(incomingByte);
   }
 
-  //Transmitting
-  Serial2.println("Hello\n");
-  delay(100);
 }
