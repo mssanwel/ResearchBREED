@@ -1,7 +1,7 @@
-#include <Servo.h>
 //#include <SPI.h>
-//#include <SD.h>
-
+#include "SdFat.h"
+#include <Servo.h>
+SdFat sd;
 int a=0;
 int b=16;
 
@@ -77,9 +77,11 @@ Adafruit_LIS3MDL lis3mdl2;
 //#include <STM32SD.h>
 // If SD card slot has no detect pin then define it as SD_DETECT_NONE
 // to ignore it. One other option is to call 'SD.begin()' without parameter.
-#ifndef SD_DETECT_PIN
-#define SD_DETECT_PIN SD_DETECT_NONE
-#endif
+
+
+//#ifndef SD_DETECT_PI
+//#define SD_DETECT_PIN SD_DETECT_NONE
+//#endif
 
 //Bus
 char incomingByte ='0';
@@ -112,10 +114,10 @@ Adafruit_NeoPixel onePixel = Adafruit_NeoPixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 void setup(void) {
  // delay(3);
-//  while (!Serial)
-//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-//  delay(1000);
-//  Serial.begin(9600);
+  while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+  delay(1000);
+  Serial.begin(9600);
 
   //Neopixel indicator
   onePixel.begin();             // Start the NeoPixel object
@@ -135,10 +137,10 @@ void setup(void) {
   
 // hardware I2C mode, can pass in address & alt Wire
 
-  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
-  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
-//  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
-//  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
+//  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
+//  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
+  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
+  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success){
     Serial.println("Failed to find LSM6DS chip");
@@ -547,8 +549,8 @@ void setup(void) {
 
 
   
-  myservo1.attach(10);  // attaches the servo on pin 9 to the servo object
-  myservo2.attach(6);
+  myservo1.attach(6);  // attaches the servo on pin 9 to the servo object
+  myservo2.attach(7);
   
   sensors_event_t accel, gyro, mag, temp;
   lsm6ds.getEvent(&accel, &gyro, &temp);
@@ -567,59 +569,59 @@ void setup(void) {
   //Serial.begin(9600);
   
 
-//  Serial.print("Initializing SD card...");
-//  // see if the card is present and can be initialized:
-//  while (!SD.begin(SD_DETECT_PIN))
-//  {
-//    //Neopixel indicator
-//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-//    onePixel.show();                      //  Update pixel state
-//    delay(10);
-//  }
-//  delay(100);
-//  Serial.println("card initialized.");
+  Serial.print("Initializing SD card...");
+  // see if the card is present and can be initialized:
+  while (!sd.begin())
+  {
+    //Neopixel indicator
+    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+    onePixel.show();                      //  Update pixel state
+    delay(10);
+  }
+  delay(100);
+  Serial.println("card initialized.");
 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
 
   
-//  strcpy(filename, "/Dlog00.txt");
-//  for (uint8_t i = 0; i < 100; i++) {
-//    filename[5] = '0' + i/10;
-//    filename[6] = '0' + i%10;
-//    // create if does not exist, do not open existing, write, sync after write
-//    if (! SD.exists(filename)) {
-//      break;
-//    }
-//  }
+  strcpy(filename, "/Dlog00.txt");
+  for (uint8_t i = 0; i < 100; i++) {
+    filename[5] = '0' + i/10;
+    filename[6] = '0' + i%10;
+    // create if does not exist, do not open existing, write, sync after write
+    if (! sd.exists(filename)) {
+      break;
+    }
+  }
   
-//  dataFile = SD.open(filename, FILE_WRITE);
-//  // if the file is available, seek to last position
-//  if (dataFile) {
-//    dataFile.seek(dataFile.size());
-//  }
-//  // if the file isn't open, pop up an error:
-//  else {
-//    Serial.println("error opening datalog.TXT");
-//    //Neopixel indicator
-//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-//    onePixel.show();                      //  Update pixel state
-//  }
-//  if (dataFile) {
-//    //Neopixel indicator
-//    int r=200, g=200, b=200;    //  Red, green and blue intensity to display
-//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-//    onePixel.show();                      //  Update pixel state
-//    dataFile.println("Start of File");
-////    dataFile.print(String(defaultX));
-////    dataFile.print(",");
-////    dataFile.println(String(defaultY));
-//    dataFile.flush(); // use flush to ensure the data written
-//    // print to the serial port too:
-//  }
-//  dataFile.close();
+  dataFile = sd.open(filename, FILE_WRITE);
+  // if the file is available, seek to last position
+  if (dataFile) {
+    dataFile.seek(dataFile.size());
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error opening datalog.TXT");
+    //Neopixel indicator
+    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+    onePixel.show();                      //  Update pixel state
+  }
+  if (dataFile) {
+    //Neopixel indicator
+    int r=200, g=200, b=200;    //  Red, green and blue intensity to display
+    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+    onePixel.show();                      //  Update pixel state
+    dataFile.println("Start of File");
+//    dataFile.print(String(defaultX));
+//    dataFile.print(",");
+//    dataFile.println(String(defaultY));
+    dataFile.flush(); // use flush to ensure the data written
+    // print to the serial port too:
+  }
+  dataFile.close();
 
   //Main motor relative encoder setup
   //Scheduler.startLoop(readEncoder_Main);
@@ -825,40 +827,40 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
 
 
-//  dataFile = SD.open(filename, FILE_WRITE);
-//  // if the file is available, seek to last position
-//  if (dataFile) {
-//    dataFile.seek(dataFile.size());
-//  }
-//  // if the file isn't open, pop up an error:
-//  else {
-//    Serial.println("error opening datalog.txt");
-//    //Neopixel indicator
-//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-//    onePixel.show();                      //  Update pixel state
-//  }
-//  
-//  // if the file is available, write to it:  
-//  if (dataFile) {
-//    dataFile.println(dataString);
-//    dataFile.flush(); // use flush to ensure the data written
-//    // print to the serial port too:
-//    Serial.println(dataString);
-//    //Neopixel indicator
-//    int r=0, g=200, b=0;    //  Red, green and blue intensity to display
-//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-//    onePixel.show();                      //  Update pixel state
-//  }
-//  // if the file isn't open, pop up an error:
-//  else {
-//    Serial.println("error on datalog.txt file handle");
-//    //Neopixel indicator
-//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-//    onePixel.show();                      //  Update pixel state
-//  }
-//  dataFile.close();
+  dataFile = sd.open(filename, FILE_WRITE);
+  // if the file is available, seek to last position
+  if (dataFile) {
+    dataFile.seek(dataFile.size());
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error opening datalog.txt");
+    //Neopixel indicator
+    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+    onePixel.show();                      //  Update pixel state
+  }
+  
+  // if the file is available, write to it:  
+  if (dataFile) {
+    dataFile.println(dataString);
+    dataFile.flush(); // use flush to ensure the data written
+    // print to the serial port too:
+    Serial.println(dataString);
+    //Neopixel indicator
+    int r=0, g=200, b=0;    //  Red, green and blue intensity to display
+    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+    onePixel.show();                      //  Update pixel state
+  }
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error on datalog.txt file handle");
+    //Neopixel indicator
+    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+    onePixel.show();                      //  Update pixel state
+  }
+  dataFile.close();
   
 }
 
