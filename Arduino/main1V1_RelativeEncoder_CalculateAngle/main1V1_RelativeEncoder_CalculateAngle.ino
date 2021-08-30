@@ -43,7 +43,7 @@ Adafruit_Mahony filter;  // fastest/smalleset
 #endif
 boolean initialization=true;
 float defaultRoll, defaultPitch;
-#define FILTER_UPDATE_RATE_HZ 100
+#define FILTER_UPDATE_RATE_HZ 150
 #define PRINT_EVERY_N_UPDATES 10
 //#define AHRS_DEBUG_OUTPUT
 uint32_t timestamp;
@@ -117,9 +117,9 @@ Adafruit_NeoPixel onePixel = Adafruit_NeoPixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 void setup(void) {
 // // delay(3);
-//  while (!Serial)
-//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-//  delay(1000);
+  while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+  delay(1000);
   Serial.begin(9600);
 
   //Neopixel indicator
@@ -140,10 +140,10 @@ void setup(void) {
   
 // hardware I2C mode, can pass in address & alt Wire
 
-  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
-  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
-//  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
-//  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
+//  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
+//  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
+  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
+  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success){
     Serial.println("Failed to find LSM6DS chip");
@@ -357,10 +357,10 @@ void setup(void) {
 
   //IMU2-----------------------------------------------------------------------------------------------------------------------------------------------------
 
-//  lsm6ds_success2 = lsm6ds2.begin_I2C(0x6B);
-//  lis3mdl_success2 = lis3mdl2.begin_I2C(0x1E);
-  lsm6ds_success2 = lsm6ds.begin_I2C(0x6A);
-  lis3mdl_success2 = lis3mdl.begin_I2C(0x1C);
+  lsm6ds_success2 = lsm6ds2.begin_I2C(0x6B);
+  lis3mdl_success2 = lis3mdl2.begin_I2C(0x1E);
+//  lsm6ds_success2 = lsm6ds.begin_I2C(0x6A);
+//  lis3mdl_success2 = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success2){
     Serial.println("Failed to find LSM6DS chip2");
@@ -736,14 +736,14 @@ void loop() {
   
   // Gyroscope needs to be converted from Rad/s to Degree/s
   // the rest are not unit-important
-  gx = gyro.gyro.x * SENSORS_RADS_TO_DPS;
-  gy = gyro.gyro.y * SENSORS_RADS_TO_DPS;
-  gz = gyro.gyro.z * SENSORS_RADS_TO_DPS;
+  gx = gyro2.gyro.x * SENSORS_RADS_TO_DPS;
+  gy = gyro2.gyro.y * SENSORS_RADS_TO_DPS;
+  gz = gyro2.gyro.z * SENSORS_RADS_TO_DPS;
 
   // Update the SensorFusion filter
   filter.update(gx, gy, gz, 
-                accel.acceleration.x, accel.acceleration.y, accel.acceleration.z, 
-                mag.magnetic.x, mag.magnetic.y, mag.magnetic.z);
+                accel2.acceleration.x, accel2.acceleration.y, accel2.acceleration.z, 
+                mag2.magnetic.x, mag2.magnetic.y, mag2.magnetic.z);
 
 
 
@@ -789,21 +789,23 @@ void loop() {
   float s1=0, s2=0;
   float maxAttacAngle=40;
   
-  s1= ((4-rFin)*maxAttacAngle/5 + (4-uFin)*maxAttacAngle/5)+ 90.0;
-  s2= ((4-rFin)*maxAttacAngle/5 - (4-uFin)*maxAttacAngle/5)+ 90.0;
-  Serial.println(s1);
-  Serial.println(s1);
+//  s1= ((4-rFin)*maxAttacAngle/5 + (4-uFin)*maxAttacAngle/5)+ 90.0;
+//  s2= ((4-rFin)*maxAttacAngle/5 - (4-uFin)*maxAttacAngle/5)+ 90.0;
+//  
 //
-//  s1= ((defaultRoll-roll)*maxAttacAngle/5 + (defaultPitch-pitch)*maxAttacAngle/5)+ 90.0;
-//  s2= ((defaultRoll-roll)*maxAttacAngle/5 - (defaultPitch-pitch)*maxAttacAngle/5)+ 90.0;
+  s1= ((defaultRoll-roll)*maxAttacAngle/ 45+ (defaultPitch-pitch)*maxAttacAngle/45)+ 90.0;
+  s2= ((defaultRoll-roll)*maxAttacAngle/45 - (defaultPitch-pitch)*maxAttacAngle/45)+ 90.0;
+
+  s1= ((defaultRoll-roll)*maxAttacAngle/45);
+  s2= ((defaultRoll-roll)*maxAttacAngle/45); 
 
 
 
 
-
-  
-  myservo1.write(s1);
-  myservo2.write(s2);
+  Serial.println(s1);
+  Serial.println(s1);
+//  myservo1.write(s1);
+//  myservo2.write(s2);
   
   
   // make a string for assembling the data to log:------------------------------------------------------------
