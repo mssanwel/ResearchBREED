@@ -1,9 +1,11 @@
 //#include <SPI.h>
-#include "SdFat.h"
+//#include "SdFat.h"
 #include <Servo.h>
-SdFat sd;
+//SdFat sd;
 int a=0;
 int b=16;
+//
+char message[100];
 
 Servo myservo1;  // create servo object to control a servo
 Servo myservo2;
@@ -24,27 +26,26 @@ int motorB=0;
 long int timer=0;
 //char encoderValue[6];
 String encoderValue="";
+String data="";
 
 
 //For calculating Euler Angles
 #include <Adafruit_Sensor_Calibration.h>
 #include <Adafruit_AHRS.h>
-
 // pick your filter! slower == better quality output
 //Adafruit_NXPSensorFusion filter; // slowest
 //Adafruit_Madgwick filter;  // faster than NXP
 Adafruit_Mahony filter;  // fastest/smalleset
-
 #if defined(ADAFRUIT_SENSOR_CALIBRATION_USE_EEPROM)
   Adafruit_Sensor_Calibration_EEPROM cal;
 #else
   Adafruit_Sensor_Calibration_SDFat cal;
 #endif
-
+boolean initialization=true;
+float defaultRoll, defaultPitch;
 #define FILTER_UPDATE_RATE_HZ 100
 #define PRINT_EVERY_N_UPDATES 10
 //#define AHRS_DEBUG_OUTPUT
-
 uint32_t timestamp;
 float gx, gy, gz;
 
@@ -79,9 +80,11 @@ Adafruit_LIS3MDL lis3mdl2;
 // to ignore it. One other option is to call 'SD.begin()' without parameter.
 
 
-//#ifndef SD_DETECT_PI
-//#define SD_DETECT_PIN SD_DETECT_NONE
-//#endif
+#ifndef SD_DETECT_PIN
+#define SD_DETECT_PIN SD_DETECT_NONE
+#endif
+//const int chipSelect = PB12;
+
 
 //Bus
 char incomingByte ='0';
@@ -113,10 +116,10 @@ Adafruit_NeoPixel onePixel = Adafruit_NeoPixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 
 void setup(void) {
- // delay(3);
-  while (!Serial)
-    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-  delay(1000);
+// // delay(3);
+//  while (!Serial)
+//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+//  delay(1000);
   Serial.begin(9600);
 
   //Neopixel indicator
@@ -137,10 +140,10 @@ void setup(void) {
   
 // hardware I2C mode, can pass in address & alt Wire
 
-//  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
-//  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
-  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
-  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
+  lsm6ds_success = lsm6ds.begin_I2C(0x6B);
+  lis3mdl_success = lis3mdl.begin_I2C(0x1E);
+//  lsm6ds_success = lsm6ds.begin_I2C(0x6A);
+//  lis3mdl_success = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success){
     Serial.println("Failed to find LSM6DS chip");
@@ -354,10 +357,10 @@ void setup(void) {
 
   //IMU2-----------------------------------------------------------------------------------------------------------------------------------------------------
 
-  lsm6ds_success2 = lsm6ds2.begin_I2C(0x6B);
-  lis3mdl_success2 = lis3mdl2.begin_I2C(0x1E);
-//  lsm6ds_success2 = lsm6ds.begin_I2C(0x6A);
-//  lis3mdl_success2 = lis3mdl.begin_I2C(0x1C);
+//  lsm6ds_success2 = lsm6ds2.begin_I2C(0x6B);
+//  lis3mdl_success2 = lis3mdl2.begin_I2C(0x1E);
+  lsm6ds_success2 = lsm6ds.begin_I2C(0x6A);
+  lis3mdl_success2 = lis3mdl.begin_I2C(0x1C);
 
   if (!lsm6ds_success2){
     Serial.println("Failed to find LSM6DS chip2");
@@ -550,7 +553,7 @@ void setup(void) {
 
   
   myservo1.attach(6);  // attaches the servo on pin 9 to the servo object
-  myservo2.attach(7);
+  myservo2.attach(9);
   
   sensors_event_t accel, gyro, mag, temp;
   lsm6ds.getEvent(&accel, &gyro, &temp);
@@ -569,59 +572,59 @@ void setup(void) {
   //Serial.begin(9600);
   
 
-  Serial.print("Initializing SD card...");
-  // see if the card is present and can be initialized:
-  while (!sd.begin())
-  {
-    //Neopixel indicator
-    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-    delay(10);
-  }
-  delay(100);
-  Serial.println("card initialized.");
+//  Serial.print("Initializing SD card...");
+//  // see if the card is present and can be initialized:
+//  while (!SD.begin(SD_DETECT_PIN))
+//  {
+//    //Neopixel indicator
+//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//    delay(10);
+//  }
+//  delay(100);
+//  Serial.println("card initialized.");
 
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
 
   
-  strcpy(filename, "/Dlog00.txt");
-  for (uint8_t i = 0; i < 100; i++) {
-    filename[5] = '0' + i/10;
-    filename[6] = '0' + i%10;
-    // create if does not exist, do not open existing, write, sync after write
-    if (! sd.exists(filename)) {
-      break;
-    }
-  }
-  
-  dataFile = sd.open(filename, FILE_WRITE);
-  // if the file is available, seek to last position
-  if (dataFile) {
-    dataFile.seek(dataFile.size());
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error opening datalog.TXT");
-    //Neopixel indicator
-    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-  }
-  if (dataFile) {
-    //Neopixel indicator
-    int r=200, g=200, b=200;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-    dataFile.println("Start of File");
-//    dataFile.print(String(defaultX));
-//    dataFile.print(",");
-//    dataFile.println(String(defaultY));
-    dataFile.flush(); // use flush to ensure the data written
-    // print to the serial port too:
-  }
-  dataFile.close();
+//  strcpy(filename, "/Dlog00.txt");
+//  for (uint8_t i = 0; i < 100; i++) {
+//    filename[5] = '0' + i/10;
+//    filename[6] = '0' + i%10;
+//    // create if does not exist, do not open existing, write, sync after write
+//    if (! SD.exists(filename)) {
+//      break;
+//    }
+//  }
+//  
+//  dataFile = SD.open(filename, FILE_WRITE);
+//  // if the file is available, seek to last position
+//  if (dataFile) {
+//    dataFile.seek(dataFile.size());
+//  }
+//  // if the file isn't open, pop up an error:
+//  else {
+//    Serial.println("error opening datalog.TXT");
+//    //Neopixel indicator
+//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//  }
+//  if (dataFile) {
+//    //Neopixel indicator
+//    int r=200, g=200, b=200;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//    dataFile.println("Start of File");
+////    dataFile.print(String(defaultX));
+////    dataFile.print(",");
+////    dataFile.println(String(defaultY));
+//    dataFile.flush(); // use flush to ensure the data written
+//    // print to the serial port too:
+//  }
+//  dataFile.close();
 
   //Main motor relative encoder setup
   //Scheduler.startLoop(readEncoder_Main);
@@ -631,9 +634,10 @@ void setup(void) {
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
 
+  //EulerAngle Calculation
   filter.begin(FILTER_UPDATE_RATE_HZ);
   timestamp = millis();
-
+  
   
 
   Wire.begin();                // join i2c bus as master
@@ -666,8 +670,9 @@ void loop() {
   lis3mdl2.getEvent(&mag2);
 
   // Bus master receiver -------------------------------------------------------------------------------------
-  Wire.requestFrom(8, 10);    // request 6 bytes from slave device #8
-  char cmd[10];    //to store the signal from transmitter
+  int b=14;
+  Wire.requestFrom(8, b);    // request 6 bytes from slave device #8
+  char cmd[b];    //to store the signal from transmitter
   int siglen = 0;  //to store the length of the incoming signal
   int endCnt=0;
   while (Wire.available()) { // slave may send less than requested
@@ -678,7 +683,7 @@ void loop() {
     cmd[siglen] = incomingByte;
     siglen++;
   }
-  cmd[9]='\0';
+  cmd[b]='\0';
   //char cmd2[8];
   //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
   //strncpy ( encoderValue, cmd, endCnt );
@@ -746,14 +751,59 @@ void loop() {
   roll = filter.getRoll();
   pitch = filter.getPitch();
   heading = filter.getYaw();
+  if (initialization and millis()>15000){
+    initialization=false;
+    defaultRoll = filter.getYaw();
+    defaultPitch = filter.getPitch();
+  }
+  else{
+    Serial.print("Default values are");
+    Serial.print(defaultRoll);
+    Serial.print(", ");
+    Serial.println(defaultPitch);
+  }
   Serial.print("Orientation: ");
   Serial.print(heading);
   Serial.print(", ");
   Serial.print(pitch);
   Serial.print(", ");
   Serial.println(roll);
-  myservo1.write(90);
-  myservo2.write(90);
+  int count=0;
+  char finCommand[3];
+  finCommand[3]='\0';
+  int finCommandCount=0;
+  Serial.println(cmd);
+  while (count<b){
+    //Serial.println(cmd[count]);
+    if (cmd[count]==','){
+      finCommand[finCommandCount]=cmd[count+1];
+      //Serial.println(finCommand[finCommandCount]);
+      finCommandCount=finCommandCount+1;
+    }
+    count+=1;
+  }
+  float rFin=String(finCommand[0]).toInt();
+  float uFin=String(finCommand[1]).toInt();
+
+  //PID implementation
+  float s1=0, s2=0;
+  float maxAttacAngle=40;
+  
+  s1= ((4-rFin)*maxAttacAngle/5 + (4-uFin)*maxAttacAngle/5)+ 90.0;
+  s2= ((4-rFin)*maxAttacAngle/5 - (4-uFin)*maxAttacAngle/5)+ 90.0;
+  Serial.println(s1);
+  Serial.println(s1);
+//
+//  s1= ((defaultRoll-roll)*maxAttacAngle/5 + (defaultPitch-pitch)*maxAttacAngle/5)+ 90.0;
+//  s2= ((defaultRoll-roll)*maxAttacAngle/5 - (defaultPitch-pitch)*maxAttacAngle/5)+ 90.0;
+
+
+
+
+
+  
+  myservo1.write(s1);
+  myservo2.write(s2);
   
   
   // make a string for assembling the data to log:------------------------------------------------------------
@@ -809,8 +859,34 @@ void loop() {
 //  Serial.print("Relative Encoder: ---------------------------->");
 //  Serial.println(pos_Main);
 
-
-
+  Serial.println(dataString);
+  data += String(rFin);
+  data += ",";
+  data += String(uFin);
+  data += ",";
+  data += String(accel.acceleration.x);
+  data += ",";
+  data += String(accel.acceleration.y);
+  data += ",";
+  data += String(accel.acceleration.z);
+  data += ",";
+  data += String(gyro.gyro.x);
+  data += ",";
+  data += String(gyro.gyro.y);
+  data += ",";
+  data += String(gyro.gyro.z);
+  data += ",";
+  data += String(mag.magnetic.x);
+  data += ",";
+  data += String(mag.magnetic.y);
+  data += ",";
+  data += String(mag.magnetic.z);
+  data += "???";
+  
+//  Wire.beginTransmission(4); // transmit to device #4
+//  strcpy(message,data.c_str());
+//  Wire.write(message);        //// sends data
+//  Wire.endTransmission();    // stop transmitting
 
 
 
@@ -827,40 +903,40 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
 
 
-  dataFile = sd.open(filename, FILE_WRITE);
-  // if the file is available, seek to last position
-  if (dataFile) {
-    dataFile.seek(dataFile.size());
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error opening datalog.txt");
-    //Neopixel indicator
-    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-  }
-  
-  // if the file is available, write to it:  
-  if (dataFile) {
-    dataFile.println(dataString);
-    dataFile.flush(); // use flush to ensure the data written
-    // print to the serial port too:
-    Serial.println(dataString);
-    //Neopixel indicator
-    int r=0, g=200, b=0;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-  }
-  // if the file isn't open, pop up an error:
-  else {
-    Serial.println("error on datalog.txt file handle");
-    //Neopixel indicator
-    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-  }
-  dataFile.close();
+//  dataFile = SD.open(filename, FILE_WRITE);
+//  // if the file is available, seek to last position
+//  if (dataFile) {
+//    dataFile.seek(dataFile.size());
+//  }
+//  // if the file isn't open, pop up an error:
+//  else {
+//    Serial.println("error opening datalog.txt");
+//    //Neopixel indicator
+//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//  }
+//  
+//  // if the file is available, write to it:  
+//  if (dataFile) {
+//    dataFile.println(dataString);
+//    dataFile.flush(); // use flush to ensure the data written
+//    // print to the serial port too:
+//    Serial.println(dataString);
+//    //Neopixel indicator
+//    int r=0, g=200, b=0;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//  }
+//  // if the file isn't open, pop up an error:
+//  else {
+//    Serial.println("error on datalog.txt file handle");
+//    //Neopixel indicator
+//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//  }
+//  dataFile.close();
   
 }
 

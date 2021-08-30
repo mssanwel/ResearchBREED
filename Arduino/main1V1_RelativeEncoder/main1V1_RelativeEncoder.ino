@@ -54,6 +54,9 @@ Adafruit_LIS3MDL lis3mdl2;
 #define SD_DETECT_PIN SD_DETECT_NONE
 #endif
 
+#include <Adafruit_Sensor_Calibration.h>
+#include <Adafruit_AHRS.h>
+
 //Bus
 char incomingByte ='0';
 String w="";

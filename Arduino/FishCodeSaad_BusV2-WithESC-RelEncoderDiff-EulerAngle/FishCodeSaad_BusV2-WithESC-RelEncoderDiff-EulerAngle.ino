@@ -335,7 +335,7 @@ void requestEvent()
 {
   //Bus operation
       //State transmitted from BUS to slave with servo fin connection
-        slaveMess=String(pos_Main)+","+String(val1)+","+String(val2)+"?";
+        slaveMess=String(pos_Main)+","+String(val1)+","+String(val2)+"??";
         strcpy(message,slaveMess.c_str());
         Wire.write(message);        //Transmit fish state
 }
