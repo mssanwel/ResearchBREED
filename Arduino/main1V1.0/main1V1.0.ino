@@ -68,10 +68,10 @@ File dataFile;
 
 void setup(void) {
  // delay(3);
-//  while (!Serial)
-//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-//  delay(1000);
-//  Serial.begin(9600);
+  while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+  delay(1000);
+  Serial.begin(9600);
   
   Serial.println("Adafruit LSM6DS+LIS3MDL test!");
 

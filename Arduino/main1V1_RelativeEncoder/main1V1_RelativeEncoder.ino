@@ -54,9 +54,6 @@ Adafruit_LIS3MDL lis3mdl2;
 #define SD_DETECT_PIN SD_DETECT_NONE
 #endif
 
-#include <Adafruit_Sensor_Calibration.h>
-#include <Adafruit_AHRS.h>
-
 //Bus
 char incomingByte ='0';
 String w="";
@@ -88,10 +85,10 @@ Adafruit_NeoPixel onePixel = Adafruit_NeoPixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 void setup(void) {
  // delay(3);
-//  while (!Serial)
-//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-//  delay(1000);
-//  Serial.begin(9600);
+  while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+  delay(1000);
+  Serial.begin(9600);
 
   //Neopixel indicator
   onePixel.begin();             // Start the NeoPixel object
