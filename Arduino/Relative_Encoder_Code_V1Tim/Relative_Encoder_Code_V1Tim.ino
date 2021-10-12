@@ -17,7 +17,7 @@ Servo motor;
 #define ENCA 3 // YELLOW
 #define ENCB 2 // WHITE
 
-int motor_Pwm = 1550;
+int motor_Pwm = 1650;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #define THROTTLE_MIN        1500
@@ -34,7 +34,7 @@ void setup() {
   motor.attach(5);
   counter = 0;
   motor.writeMicroseconds(1500);
-  delay(1000);
+  delay(2000);
   attachInterrupt( digitalPinToInterrupt(ENCA), readEncoder_Main, RISING);
   
 
@@ -44,15 +44,19 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   rel_Encoder();
-//  if (rel_angle< 180){
-//    motor_Pwm = ((75));
-//  }
-//  else{
-//    motor_Pwm = (155);
-//  } 
-//  int throttle=map(motor_Pwm, 0, 255, THROTTLE_MIN, THROTTLE_MAX);
-//  motor.writeMicroseconds(throttle);
-  motor.writeMicroseconds(motor_Pwm);
+  if (rel_angle< 180){
+    motor_Pwm = ((30));
+    Serial.println(" Slow");
+  }
+  else{
+    motor_Pwm = (80);
+    Serial.println(" Fast");
+  } 
+  int throttle=map(motor_Pwm, 0, 255, THROTTLE_MIN, THROTTLE_MAX);
+  motor.writeMicroseconds(throttle);
+  Serial.print("PWM: ");
+  Serial.println(throttle);
+    //motor.writeMicroseconds(motor_Pwm);
 }
 
 void rel_Encoder(){
@@ -81,13 +85,9 @@ void rel_Encoder(){
 
 
 void readEncoder_Main(){
-    int b_A = digitalRead(ENCB);
-  if(b_A > 0){
+ 
     pos_Main++;
-  }
-  else{
-    pos_Main--;
-  }
+  
 
 //  //Serial.print("Relative Encoder: ---------------------------->");
 //  //Serial.println(pos_Main);

@@ -47,6 +47,7 @@ float timeStep = 0;
 long int encoderCounter = 0;
 long int encoderRawVal = 0; //Global Variable for encoder absolute value
 double angularVelocity[3] = {0, 0, 0};
+long int counter2 = 0;
 
 //Turn Differential
 int turnVal = 5;        //Stores commmand value for control left and right. values 1-4 are left, 5 is straight, 6-9 are right
@@ -303,8 +304,8 @@ void loop() {
 
       
       //Serial.println();
-      Serial.print("The message is: ");
-      Serial.println(w);
+     // Serial.print("The message is: ");
+      //Serial.println(w);
       
 //      Serial.print("The character 1 is: ");
 //      Serial.println(char1);
@@ -331,11 +332,11 @@ void loop() {
 //      Serial.println(s1);
 //      Serial.print("output to servo2: ");
 //      Serial.println(s2);
-      Serial.print("EncoderValue -----------------------------------------> : ");
-      Serial.println(encoderRawVal);
+     // Serial.print("EncoderValue -----------------------------------------> : ");
+     // Serial.println(encoderRawVal);
 //      Serial.println();
-      Serial.print("Relative Encoder: ---------------------------->");
-      Serial.println(pos_Main);
+     // Serial.print("Relative Encoder: ---------------------------->");
+    //  Serial.println(pos_Main);
       //yield();
 }
 
@@ -347,24 +348,24 @@ void loop() {
 
 void rel_Encoder(){
     long int x = pos_Main;
-    Serial.print(pos_Main);
+   // Serial.print(pos_Main);
 
     // removes the cumulative ticks
     counter = 0;
      while (((long int)x/ticRatioMainMotor)>0){
       x=x-ticRatioMainMotor;
       counter++;
+      //counter2 = counter2 + counter; 
   }
+  
+//  Serial.print(x);
+//  Serial.print("\t");
+//  Serial.println(counter2);
 
-  Serial.print(" This is the final value of x");
-  Serial.print("\t");
-  Serial.print(x);
-  Serial.print("\t");
-  Serial.print(counter);
+ 
 
   rel_angle = (x/(ticRatioMainMotor*1.0))*360; //this is angle in degrees
-  Serial.print("\t");
-  Serial.println(rel_angle);
+
   
   
 }
@@ -383,7 +384,8 @@ void killswitch(){
     power=0;
     motor_Pwm = 0;
     analogWrite(pwm_Pin1, motor_Pwm);
-    Serial.println("Kill switch activated"); 
+    pos_Main = 0;
+    //Serial.println("Kill switch activated"); 
   }
 }
 
@@ -405,20 +407,6 @@ bool checkSum(char incomingByte, int siglen, char cmd[]) {
   return check;
 }
 
-//Encoder Function
-void encoderRead(){
-  int a[10];
-  int b[10];
-  for(int n=0; n<10; n++){
-    a[n] = !digitalRead(22+2*n);
-    //Serial.println(n);
-  }
-  b[9] = a[9];
-  for(int i = 1;i<10;i++){
-    b[9-i] = b[9-i+1]^a[9-i];  // xor
-  }
-  encoderRawVal = 512.0*b[9]+256.0*b[8]+128.0*b[7]+64.0*b[6]+32.0*b[5]+16.0*b[4]+8.0*b[3]+4.0*b[2]+2.0*b[1]+b[0];
-}
 
 void readEncoder_Main(){
   
