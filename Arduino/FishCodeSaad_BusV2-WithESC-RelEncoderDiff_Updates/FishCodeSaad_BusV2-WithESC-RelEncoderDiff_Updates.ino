@@ -56,7 +56,7 @@ float turn_Pwm = 0;         // Pwm value with differential applied
 int oldPower = 5;
 long int tailDelay1 = 2000;
 int encoderPin0   =  29;
-double diff = 0.7;              //to store the differential value corresponding to the signal
+double diff = 0.5;              //to store the differential value corresponding to the signal
 double stepDiff = 0.1;          //sets the differential value
 int highcutoff, lowcutoff, offset;
 
@@ -86,7 +86,7 @@ Servo   pusherESC;
 #define ENCA 3 // YELLOW
 #define ENCB 2 // WHITE
 volatile long int pos_Main = 0;
-int ticRatioMainMotor=5250; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
+int ticRatioMainMotor=6255; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -153,31 +153,35 @@ void loop() {
   
   
   if (Serial1.available() > 0) {  //if bytes available to read in the buffer
-    Serial.println("I'm receiving: ");
+    //Serial.println("I'm receiving: ");
     
     // waiting for the start bit 'P':
     while (incomingByte != 'R'){
       incomingByte = Serial1.read();
     }
-    Serial.print(incomingByte);
+    //Serial.print(incomingByte);
     char cmd[12];    //to store the signal from transmitter
     int siglen = 0;  //to store the length of the incoming signal
     while (incomingByte != '?' and siglen<11) {  //read char by char until we know the end of signal is reached indicated by the identifier '?'
-      cmd[siglen] = incomingByte;
-      siglen++;
-      incomingByte = Serial1.read();
-      Serial.print(incomingByte);
+      if (Serial1.available()>0){
+        cmd[siglen] = incomingByte;
+        siglen++;
+        incomingByte = Serial1.read();
+        //Serial.print(incomingByte);
+      }
     }
     //Empty out buffer
-    while (Serial1.available()>0){
-      Serial1.read();
+    if (Serial1.available()>60){
+      while (Serial1.available()>0){
+        Serial1.read();   
+      }
     }
     //As we convert char array to string last element should exist and ideally must be the limiting character
     cmd[11]='\0';
     check = checkSum(incomingByte, siglen, cmd);
     //check= true;
-    Serial.print("Checksum value is: ");
-    Serial.println(check);
+    //Serial.print("Checksum value is: ");
+    //Serial.println(check);
     
     if (check == true) {
       //Timer for kill switch. Note: Keep it in checksum condition as we want it to resume operation once proper signlas are recived and not due to interfering signals.
@@ -236,12 +240,22 @@ void loop() {
 
       
       // CAUTION: Fish will turn on after kill switch activated once if signal is restored and checksum is passed
-      //killswitch();
-      int rel_pos_Main=pos_Main;
-      while ((long int)rel_pos_Main/ticRatioMainMotor){
-        rel_pos_Main=rel_pos_Main-ticRatioMainMotor;
+      killswitch();
+      //long int rel_pos_Main=pos_Main;
+      //Serial.print("______________________________________________________________>>>");
+      //Serial.println(pos_Main);
+      while (((long int)pos_Main/ticRatioMainMotor)>0){
+        Serial.print("______________________________________________________________>>>>");
+        Serial.println((long int)pos_Main/ticRatioMainMotor);
+        Serial.print("______________________________________________________________>>>>");
+        Serial.println(pos_Main);
+        pos_Main=pos_Main-ticRatioMainMotor;
       }
-      encoderRawVal=rel_pos_Main;
+      Serial.print("______________________________________________________________>>>>");
+      Serial.println((long int)pos_Main/ticRatioMainMotor);
+      encoderRawVal=pos_Main;
+      //Serial.print("______________________________________________________________>>>>>>");
+      //Serial.println(rel_pos_Main);
     
     // Turning control Left
     if ((turnVal>=1) and (turnVal<=4)){
@@ -297,7 +311,7 @@ void loop() {
 
 
       
-      Serial.println();
+      //Serial.println();
       Serial.print("The message is: ");
       Serial.println(w);
       

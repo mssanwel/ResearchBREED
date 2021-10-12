@@ -53,7 +53,7 @@ int sensorValueY = analogRead(A1);
 
 void setup() {
   // Setup Serial
-  Serial.begin(9600);
+  Serial.begin(9600, SERIAL_8O1);
   Serial1.begin(9600, SERIAL_8O1);
   while (!Serial.read());
   while (!Serial1.read()); // Wait for serial to setup
