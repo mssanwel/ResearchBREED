@@ -70,8 +70,8 @@ char filename[15];
 
 //Relative Encoder Main Motor
 //
-#define ENCA 10 // YELLOW
-#define ENCB 9 // WHITE
+#define ENCA A3 // YELLOW
+#define ENCB A4 // WHITE
 volatile int pos_Main = 0;
 int ticRatioMainMotor=500; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
 
@@ -84,11 +84,11 @@ Adafruit_NeoPixel onePixel = Adafruit_NeoPixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 
 void setup(void) {
- // delay(3);
-//  while (!Serial)
-//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-//  delay(1000);
-//  Serial.begin(9600);
+  //delay(3);
+  while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+  delay(1000);
+  Serial.begin(9600);
 
   //Neopixel indicator
   onePixel.begin();             // Start the NeoPixel object
@@ -687,7 +687,10 @@ void loop() {
   dataString += ",";
   dataString += String(mag.magnetic.z);
   dataString += ",";
-  dataString += "---------------,";
+  dataString += "---------------";
+  dataString += ",";
+  dataString += String(pos_Main);
+  dataString += ",";
 //  dataString += String(accel2.acceleration.x);
 //  dataString += ",";
 //  dataString += String(accel2.acceleration.y);
@@ -707,8 +710,8 @@ void loop() {
 //  dataString += String(mag2.magnetic.z);
 //  dataString += ",";
   
-  dataString += String(encoderValue);
-  dataString += ",";
+  //dataString += String(encoderValue);
+  //dataString += ",";
 //  dataString += String(pos_Main);
 //  dataString += ",";
 //  
