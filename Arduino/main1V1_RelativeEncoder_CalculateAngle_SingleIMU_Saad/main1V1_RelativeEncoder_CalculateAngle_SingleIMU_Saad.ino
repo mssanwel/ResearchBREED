@@ -105,10 +105,10 @@ Adafruit_NeoPixel onePixel = Adafruit_NeoPixel(1, 8, NEO_GRB + NEO_KHZ800);
 
 void setup(void) {
 // // delay(3);
-  while (!Serial)
-    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
-  delay(1000);
-  Serial.begin(9600);
+//  while (!Serial)
+//    delay(10); // will pause Zero, Leonardo, etc until Serial console opens
+//  delay(1000);
+//  Serial.begin(9600);
 
   //Neopixel indicator
   onePixel.begin();             // Start the NeoPixel object
@@ -407,25 +407,27 @@ void loop() {
 
   // Bus master receiver -------------------------------------------------------------------------------------
   int b=14;
-//  Wire.requestFrom(8, b);    // request 6 bytes from slave device #8
-//  char cmd[b];    //to store the signal from transmitter
-//  int siglen = 0;  //to store the length of the incoming signal
-//  int endCnt=0;
-//  while (Wire.available()) { // slave may send less than requested
-//    char incomingByte = Wire.read();
-//    if (incomingByte=='?'){
-//      endCnt=siglen;
-//    }
-//    cmd[siglen] = incomingByte;
-//    siglen++;
-//  }
-//  cmd[b]='\0';
-//  //char cmd2[8];
-//  //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
-//  //strncpy ( encoderValue, cmd, endCnt );
-//  //encoderValue[endCnt]='\0';
-//  encoderValue=cmd;
-//  //Serial.println(encoderValue);
+  Wire.requestFrom(8, b);    // request 6 bytes from slave device #8
+  char cmd[b];    //to store the signal from transmitter
+  int siglen = 0;  //to store the length of the incoming signal
+  int endCnt=0;
+  while (Wire.available()) { // slave may send less than requested
+    char incomingByte = Wire.read();
+    if (incomingByte=='?'){
+      endCnt=siglen;
+    }
+    cmd[siglen] = incomingByte;
+    siglen++;
+  }
+  cmd[b]='\0';
+//  Serial.print("------------------------>");
+//  Serial.println(cmd);
+  //char cmd2[8];
+  //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
+  //strncpy ( encoderValue, cmd, endCnt );
+  //encoderValue[endCnt]='\0';
+  encoderValue=cmd;
+  //Serial.println(encoderValue);
 
 // Wire.requestFrom(4, 6);    // request 6 bytes from slave device #8
 //
@@ -504,33 +506,35 @@ void loop() {
     Serial.print(", ");
     Serial.println(defaultPitch);
   }
-  Serial.print("Orientation: ");
-  Serial.print(heading);
-  Serial.print(", ");
-  Serial.print(pitch);
-  Serial.print(", ");
-  Serial.println(roll);
+//  Serial.print("Orientation: ");
+//  Serial.print(heading);
+//  Serial.print(", ");
+//  Serial.print(pitch);
+//  Serial.print(", ");
+//  Serial.println(roll);
 
 
  //For Control signals input 
-//  int count=0;
-//  char finCommand[3];
-//  finCommand[3]='\0';
-//  int finCommandCount=0;
-//  Serial.println(cmd);
-//  while (count<b){
-//    //Serial.println(cmd[count]);
-//    if (cmd[count]==','){
-//      finCommand[finCommandCount]=cmd[count+1];
-//      //Serial.println(finCommand[finCommandCount]);
-//      finCommandCount=finCommandCount+1;
-//    }
-//    count+=1;
-//  }
+  int count=0;
+  char finCommand[3];
+  finCommand[3]='\0';
+  int finCommandCount=0;
+  //Serial.println(cmd);
+  while (count<b){
+    //Serial.println(cmd[count]);
+    if (cmd[count]==','){
+      finCommand[finCommandCount]=cmd[count+1];
+      //Serial.println(finCommand[finCommandCount]);
+      finCommandCount=finCommandCount+1;
+    }
+    count+=1;
+  }
 
 
-//  float rFin=String(finCommand[0]).toInt();
-//  float uFin=String(finCommand[1]).toInt();
+  float rFin=String(finCommand[0]).toInt();
+  float uFin=String(finCommand[1]).toInt();
+//  Serial.println(rFin);
+//  Serial.println(uFin);
 
   //PID implementation
   float s1=0, s2=0;
@@ -539,7 +543,11 @@ void loop() {
 //  s1= ((4-rFin)*maxAttacAngle/5 + (4-uFin)*maxAttacAngle/5)+ 90.0;
 //  s2= ((4-rFin)*maxAttacAngle/5 - (4-uFin)*maxAttacAngle/5)+ 90.0;
   
-
+  defaultPitch=map(uFin,0,8,-90,90);
+  defaultRoll=map(rFin,0,8,-90,90);
+//  Serial.println(defaultPitch);
+//  Serial.println(defaultRoll);
+  
   s1= ((defaultPitch-pitch)*maxAttacAngle/45 + (defaultRoll-roll)*maxAttacAngle/45) + 90.0;
   s2= ((defaultPitch-pitch)*maxAttacAngle/45 - (defaultRoll-roll)*maxAttacAngle/45) + 90.0;
 
@@ -562,8 +570,8 @@ void loop() {
 
 
 
-  Serial.println(s1);
-  Serial.println(s2);
+//  Serial.println(s1);
+//  Serial.println(s2);
   myservo1.write(s1);
   myservo2.write(s2);
   
