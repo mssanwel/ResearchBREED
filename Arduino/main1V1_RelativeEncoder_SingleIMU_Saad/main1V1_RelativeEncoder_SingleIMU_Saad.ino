@@ -313,15 +313,15 @@ void setup(void) {
 
   Serial.print("Initializing SD card...");
   // see if the card is present and can be initialized:
-  while (!SD.begin(SD_DETECT_PIN))
-  {
-    //Neopixel indicator
-    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
-    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
-    onePixel.show();                      //  Update pixel state
-    delay(10);
-  }
-  delay(100);
+//  while (!SD.begin(SD_DETECT_PIN))
+//  {
+//    //Neopixel indicator
+//    int r=200, g=0, b=0;    //  Red, green and blue intensity to display
+//    onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
+//    onePixel.show();                      //  Update pixel state
+//    delay(10);
+//  }
+//  delay(100);
   Serial.println("card initialized.");
 
   // open the file. note that only one file can be open at a time,
@@ -365,6 +365,7 @@ void setup(void) {
   }
   dataFile.close();
 
+
   //Main motor relative encoder setup
   //Scheduler.startLoop(readEncoder_Main);
   attachInterrupt( digitalPinToInterrupt(ENCA), readEncoder_Main, RISING);
@@ -372,8 +373,6 @@ void setup(void) {
   
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
-  
-
   Wire.begin();                // join i2c bus as master
 }
 
@@ -388,14 +387,8 @@ void loop() {
   lsm6ds.getEvent(&accel, &gyro, &temp);
   lis3mdl.getEvent(&mag);
 
- // IMU2
- //  /* Get new normalized sensor events */
-  
-  sensors_event_t accel2, gyro2, mag2, temp2;
-  lsm6ds2.getEvent(&accel2, &gyro2, &temp2);
-  lis3mdl2.getEvent(&mag2);
 
-   // Bus master receiver -------------------------------------------------------------------------------------
+  // Bus master receiver -------------------------------------------------------------------------------------
   int b=14;
   Wire.requestFrom(8, b);    // request 6 bytes from slave device #8
   char cmd[b];    //to store the signal from transmitter
@@ -549,18 +542,4 @@ void loop() {
   }
   dataFile.close();
   
-}
-
-
-void readEncoder_Main(){
-  int b_A = digitalRead(ENCB);
-  if(b_A > 0){
-    pos_Main++;
-  }
-  else{
-    pos_Main--;
-  }
-//  Serial.print("Relative Encoder: ---------------------------->");
-//  Serial.println(pos_Main);
-  //yield();
 }

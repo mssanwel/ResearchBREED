@@ -158,7 +158,20 @@ void loop() {
   display.setCursor(0, 0);
   display.print("PWM: ");
   display.println(pMap);
-  display.print("Turning: ");
+  // Turning control Left
+  display.print("Turning:");
+  int turnVal=tMap;
+  if ((turnVal>=1) and (turnVal<=3)){
+    display.print("LEFT => ");
+    }
+    // Going Straight
+    else if ((turnVal>=4) and (turnVal<=6)){
+      display.print("STRAIGHT => ");
+    }
+    // Turning control Right
+    else if ((turnVal>=7) and (turnVal<=9)){
+      display.print("RIGHT => ");
+    }
   display.println(tMap);
   display.println("Servo:  ");
   display.print("X= ");

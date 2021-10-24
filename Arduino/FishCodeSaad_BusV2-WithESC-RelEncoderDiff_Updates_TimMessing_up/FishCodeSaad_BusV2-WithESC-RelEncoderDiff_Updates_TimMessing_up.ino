@@ -250,7 +250,7 @@ void loop() {
     rel_Encoder();
      
     // Turning control Left
-    if ((turnVal>=1) and (turnVal<=4)){
+    if ((turnVal>=1) and (turnVal<=3)){
       //Serial.println("Turning Left");
        if (rel_angle< 180){
             motor_Pwm = ((power*255)/9.0)*diff;
@@ -262,13 +262,13 @@ void loop() {
 
     
     // Going Straight
-    else if (turnVal==5){
+    else if ((turnVal>=4) and (turnVal<=6)){
       //Serial.println("Going straight");
       motor_Pwm = (power*255)/9.0; //maps the value received (0-9) to (0-255)
     }
 
     // Turning control Right
-    else if ((turnVal>=6) and (turnVal<=9)){
+    else if ((turnVal>=7) and (turnVal<=9)){
       //Serial.println("Turning Right");
       if (rel_angle > 180){
         motor_Pwm = (power*255)/9.0*diff;

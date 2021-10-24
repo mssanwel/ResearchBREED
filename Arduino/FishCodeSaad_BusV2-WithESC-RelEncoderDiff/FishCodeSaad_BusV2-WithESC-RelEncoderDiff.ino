@@ -56,7 +56,7 @@ float turn_Pwm = 0;         // Pwm value with differential applied
 int oldPower = 5;
 long int tailDelay1 = 2000;
 int encoderPin0   =  29;
-double diff = 0.7;              //to store the differential value corresponding to the signal
+double diff = 0.2;              //to store the differential value corresponding to the signal
 double stepDiff = 0.1;          //sets the differential value
 int highcutoff, lowcutoff, offset;
 
@@ -85,8 +85,8 @@ Servo   pusherESC;
 //
 #define ENCA 3 // YELLOW
 #define ENCB 2 // WHITE
-volatile long int pos_Main = 0;
-int ticRatioMainMotor=5250; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
+volatile int pos_Main = 0;
+int ticRatioMainMotor=10000; //Number of tic per revolution of the main motor. Implemnted to use the relative encoder as an absolute encoder temporarily. 
 
 void setup() {
   pinMode(13, OUTPUT);
@@ -236,9 +236,10 @@ void loop() {
 
       
       // CAUTION: Fish will turn on after kill switch activated once if signal is restored and checksum is passed
-      //killswitch();
+      killswitch();
+      //encoderRead();
       int rel_pos_Main=pos_Main;
-      while ((long int)rel_pos_Main/ticRatioMainMotor){
+      while ((int)rel_pos_Main/ticRatioMainMotor){
         rel_pos_Main=rel_pos_Main-ticRatioMainMotor;
       }
       encoderRawVal=rel_pos_Main;
@@ -246,7 +247,7 @@ void loop() {
     // Turning control Left
     if ((turnVal>=1) and (turnVal<=4)){
       //Serial.println("Turning Left");
-       if ((abs(encoderRawVal))< int(ticRatioMainMotor/2)){
+       if ((abs(encoderRawVal-offset)%ticRatioMainMotor)< int(ticRatioMainMotor/2)){
             motor_Pwm = ((power*255)/9.0)*diff;
       }
       else{
@@ -264,7 +265,7 @@ void loop() {
     // Turning control Right
     else if ((turnVal>=6) and (turnVal<=9)){
       //Serial.println("Turning Right");
-      if ((abs(encoderRawVal))>= int(ticRatioMainMotor/2)){
+      if ((abs(encoderRawVal-offset)%ticRatioMainMotor)>= int(ticRatioMainMotor/2)){
         motor_Pwm = (power*255)/9.0*diff;
       }
       else{
@@ -273,34 +274,24 @@ void loop() {
     }
   
   
-//  Code used to test
-
-//  //analogWrite (pwm_Pin1, motor_Pwm);
-//  //analogWrite (pwm_Pin2, LOW);
-//  
-//  //Send PWM signal to motor
-//  motor_Pwm = 255;//(power*255)/9.0;
-//  turn_Pwm = ((power*255)/9.0)*diff;
-//  //Servo motor angle is set
-//  servo1.write(135);
-//  servo2.write(135);
-//  //encoderRead();
-   
+  
+  //analogWrite (pwm_Pin1, motor_Pwm);
+  //analogWrite (pwm_Pin2, LOW);
   int throttle=map(motor_Pwm, 0, 255, THROTTLE_MIN, THROTTLE_MAX);
   pusherESC.writeMicroseconds(throttle);
 //  Serial.print("motor pwm:------------------------->");
 //  Serial.println(motor_Pwm);
 //  Serial.print("Motor Throttle:---------------------------->");
 //  Serial.println(throttle);
-
-
-
-
-      
+//
+//
+//
+//
+//      
       Serial.println();
       Serial.print("The message is: ");
       Serial.println(w);
-      
+//      
 //      Serial.print("The character 1 is: ");
 //      Serial.println(char1);
 //      Serial.print("Value 1 is: ");
@@ -326,11 +317,11 @@ void loop() {
 //      Serial.println(s1);
 //      Serial.print("output to servo2: ");
 //      Serial.println(s2);
-      Serial.print("EncoderValue -----------------------------------------> : ");
-      Serial.println(encoderRawVal);
+//      Serial.print("EncoderValue ---> : ");
+//      Serial.println(encoderRawVal);
 //      Serial.println();
-      Serial.print("Relative Encoder: ---------------------------->");
-      Serial.println(pos_Main);
+//      Serial.print("Relative Encoder: ---------------------------->");
+//      Serial.println(pos_Main);
       //yield();
 }
 
