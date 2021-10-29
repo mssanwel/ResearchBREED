@@ -500,18 +500,18 @@ void loop() {
     defaultRoll = 0;//filter.getYaw();
     defaultPitch = 0;//filter.getPitch();
   }
-  else{
-    Serial.print("Default values are");
-    Serial.print(defaultRoll);
-    Serial.print(", ");
-    Serial.println(defaultPitch);
-  }
-//  Serial.print("Orientation: ");
+//  else{
+//    Serial.print("Default values are");
+//    Serial.print(defaultRoll);
+//    Serial.print(", ");
+//    Serial.println(defaultPitch);
+//  }
+  Serial.print("Orientation: ");
 //  Serial.print(heading);
 //  Serial.print(", ");
-//  Serial.print(pitch);
-//  Serial.print(", ");
-//  Serial.println(roll);
+  Serial.print(pitch);
+  Serial.print(", ");
+  Serial.println(roll);
 
 
  //For Control signals input 
@@ -548,8 +548,8 @@ void loop() {
 //  Serial.println(defaultPitch);
 //  Serial.println(defaultRoll);
   
-  s1= ((defaultPitch-pitch)*maxAttacAngle/45 + (defaultRoll-roll)*maxAttacAngle/45) + 90.0;
-  s2= ((defaultPitch-pitch)*maxAttacAngle/45 - (defaultRoll-roll)*maxAttacAngle/45) + 90.0;
+  s1= (-(defaultRoll-roll)*maxAttacAngle/45 + (defaultPitch-pitch)*maxAttacAngle/45) + 90.0;
+  s2= ((defaultRoll-roll)*maxAttacAngle/45 + (defaultPitch-pitch)*maxAttacAngle/45) + 90.0;
 
   if (s1>180){
     s1=180;
@@ -557,6 +557,7 @@ void loop() {
   else if(s1<0){
     s1=0;
   }
+  
   if (s2>180){
     s2=180;
   }
@@ -570,8 +571,8 @@ void loop() {
 
 
 
-//  Serial.println(s1);
-//  Serial.println(s2);
+  Serial.println(s1);
+  Serial.println(s2);
   myservo1.write(s1);
   myservo2.write(s2);
   

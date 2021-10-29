@@ -338,6 +338,13 @@ void loop() {
      // Serial.print("Relative Encoder: ---------------------------->");
     //  Serial.println(pos_Main);
       //yield();
+
+      if (power==0){
+        digitalWrite(13, LOW);
+      }
+      else{
+        digitalWrite(13, HIGH);
+      }
 }
 
 
