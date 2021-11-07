@@ -389,20 +389,20 @@ void loop() {
 
 
   // Bus master receiver -------------------------------------------------------------------------------------
-  int b=14;
-  Wire.requestFrom(8, b);    // request 6 bytes from slave device #8
-  char cmd[b];    //to store the signal from transmitter
-  int siglen = 0;  //to store the length of the incoming signal
-  int endCnt=0;
-  while (Wire.available()) { // slave may send less than requested
-    char incomingByte = Wire.read();
-    if (incomingByte=='?'){
-      endCnt=siglen;
-    }
-    cmd[siglen] = incomingByte;
-    siglen++;
-  }
-  cmd[b]='\0';
+//  int b=14;
+//  Wire.requestFrom(8, b);    // request 6 bytes from slave device #8
+//  char cmd[b];    //to store the signal from transmitter
+//  int siglen = 0;  //to store the length of the incoming signal
+//  int endCnt=0;
+//  while (Wire.available()) { // slave may send less than requested
+//    char incomingByte = Wire.read();
+//    if (incomingByte=='?'){
+//      endCnt=siglen;
+//    }
+//    cmd[siglen] = incomingByte;
+//    siglen++;
+//  }
+//  cmd[b]='\0';
   //char cmd2[8];
   //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
   //strncpy ( encoderValue, cmd, endCnt );
