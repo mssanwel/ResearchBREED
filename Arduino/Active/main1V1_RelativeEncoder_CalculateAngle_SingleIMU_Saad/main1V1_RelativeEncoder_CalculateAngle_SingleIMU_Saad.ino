@@ -147,11 +147,11 @@ void setup(void) {
     onePixel.setPixelColor(0, r, g, b);   //  Set pixel 0 to (r,g,b) color value
     onePixel.show();                      //  Update pixel state
   }
-  if (!(lsm6ds_success && lis3mdl_success)) {
-    while (1) {
-      delay(10);
-    }
-  }
+//  if (!(lsm6ds_success && lis3mdl_success)) {
+//    while (1) {
+//      delay(10);
+//    }
+//  }
 
   Serial.println("LSM6DS and LIS3MDL Found!");
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -420,52 +420,17 @@ void loop() {
     siglen++;
   }
   cmd[b]='\0';
-//  Serial.print("------------------------>");
-//  Serial.println(cmd);
-  //char cmd2[8];
-  //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
-  //strncpy ( encoderValue, cmd, endCnt );
-  //encoderValue[endCnt]='\0';
-  encoderValue=cmd;
-  //Serial.println(encoderValue);
 
-// Wire.requestFrom(4, 6);    // request 6 bytes from slave device #8
-//
-//  while (Wire.available()) { // slave may send less than requested
-//    char c = Wire.read(); // receive a byte as character
-//    Serial.print(c);         // print the character
-//  }
-//  
-//  Wire.requestFrom(4, 30);    // request 6 bytes from slave device #8
-//  char cmd2[30];    //to store the signal from transmitter
-//  int siglen2 = 0;  //to store the length of the incoming signal
-//  int endCnt2=0;
-//  while (Wire.available()) { // slave may send less than requested
-//    char incomingByte2 = Wire.read();
-//    if (incomingByte2=='?'){
-//      endCnt2=siglen2;
-//    }
-//    cmd2[siglen2] = incomingByte2;
-//    siglen2++;
-//  }
-//  cmd2[30]='\0';
-//  //char cmd2[8];
-//  //memcpy(cmd, &cmd[0], endCnt*sizeof(*cmd));
-//  //strncpy ( encoderValue, cmd, endCnt );
-//  //encoderValue[endCnt]='\0';
-//  //encoderValue=cmd;
-//  Serial.println(cmd2);
+
+
 
   
-//
-//  Wire.requestFrom(8, 6);    // request 6 bytes from slave device #8
-//
-//  while (Wire.available()) { // slave may send less than requested
-//    incomingByte = Wire.read();
-//    cmd[siglen] = incomingByte;
-//    siglen++;
-//    Serial.print(incomingByte);
-//  }
+  Serial.print("------------------------>");
+  Serial.println(cmd);
+  //encoderValue=cmd;
+//Serial.println(encoderValue);
+
+
 
 
 
@@ -506,28 +471,32 @@ void loop() {
 //    Serial.print(", ");
 //    Serial.println(defaultPitch);
 //  }
-  Serial.print("Orientation: ");
-//  Serial.print(heading);
+//  Serial.print("Orientation: ");
+////  Serial.print(heading);
+////  Serial.print(", ");
+//  Serial.print(pitch);
 //  Serial.print(", ");
-  Serial.print(pitch);
-  Serial.print(", ");
-  Serial.println(roll);
+//  Serial.println(roll);
 
 
  //For Control signals input 
   int count=0;
   char finCommand[3];
-  finCommand[3]='\0';
+  finCommand[0]='4';
+  finCommand[1]='4';
+  finCommand[2]='\0'; //previously 3
   int finCommandCount=0;
   //Serial.println(cmd);
-  while (count<b){
-    //Serial.println(cmd[count]);
-    if (cmd[count]==','){
-      finCommand[finCommandCount]=cmd[count+1];
-      //Serial.println(finCommand[finCommandCount]);
-      finCommandCount=finCommandCount+1;
+  if (checkSum(b,cmd)){
+    while (count<b){
+      //Serial.println(cmd[count]);
+      if (cmd[count]==','){
+        finCommand[finCommandCount]=cmd[count-1];
+        Serial.println(finCommand[finCommandCount]);
+        finCommandCount=finCommandCount+1;
+      }
+      count+=1;
     }
-    count+=1;
   }
 
 
@@ -538,19 +507,22 @@ void loop() {
 
   //PID implementation
   float s1=0, s2=0;
-  float maxAttacAngle=40;
+  float maxAttacAngle=45;
   
 //  s1= ((4-rFin)*maxAttacAngle/5 + (4-uFin)*maxAttacAngle/5)+ 90.0;
 //  s2= ((4-rFin)*maxAttacAngle/5 - (4-uFin)*maxAttacAngle/5)+ 90.0;
   
   defaultPitch=map(uFin,0,8,-90,90);
   defaultRoll=map(rFin,0,8,-90,90);
-//  Serial.println(defaultPitch);
-//  Serial.println(defaultRoll);
+  Serial.println(defaultPitch);
+  Serial.println(defaultRoll);
+//   defaultRoll = 0;//filter.getYaw();
+//   defaultPitch = 0;//filter.getPitch();
   
-  s1= (-(defaultRoll-roll)*maxAttacAngle/45 + (defaultPitch-pitch)*maxAttacAngle/45) + 90.0;
-  s2= ((defaultRoll-roll)*maxAttacAngle/45 + (defaultPitch-pitch)*maxAttacAngle/45) + 90.0;
-
+  s1= int((roll-defaultRoll) + (pitch-defaultPitch) + 90);
+  s2= int((roll-defaultRoll) - (pitch-defaultPitch) + 90);
+  Serial.println(s1);
+  Serial.println(s2);
   if (s1>180){
     s1=180;
   }
@@ -564,6 +536,9 @@ void loop() {
   else if(s2<0){
     s2=0;
   }
+
+  Serial.println((roll));
+  Serial.println((pitch));
   
 //  s1= ((defaultRoll-roll)*maxAttacAngle/45);
 //  s2= ((defaultRoll-roll)*maxAttacAngle/45); 
@@ -571,8 +546,7 @@ void loop() {
 
 
 
-  Serial.println(s1);
-  Serial.println(s2);
+
   myservo1.write(s1);
   myservo2.write(s2);
   
@@ -590,6 +564,21 @@ void loop() {
   
 }
 
+bool checkSum(int siglen, char cmd[]) {
+  bool check = false;
+  int cSum=0;
+  cSum=cmd[0]+cmd[1]+cmd[2];
+  
+  String numcheck = String(cmd[4]) + String(cmd[5])+ String(cmd[6]);
+  int number = numcheck.toInt();
+  Serial.println("Csum & number: ");
+  Serial.println(cSum);
+  Serial.println(number);
+  if (cSum == number) {
+    check = true;
+  }
+  return check;
+}
 
 void readEncoder_Main(){
   int b_A = digitalRead(ENCB);

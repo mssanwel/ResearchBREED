@@ -359,7 +359,7 @@ void rel_Encoder(){
 
     // removes the cumulative ticks
     counter = 0;
-     while (((long int)x/ticRatioMainMotor)>0){
+     while (((long int)x/ticRatioMainMotor)>0){ //NOT FIXED
       x=x-ticRatioMainMotor;
       counter++;
       //counter2 = counter2 + counter; 
@@ -381,7 +381,8 @@ void requestEvent()
 {
   //Bus operation
       //State transmitted from BUS to slave with servo fin connection
-        slaveMess=String(pos_Main)+","+String(val1)+","+String(val2)+"?";
+        int ascii_sum = (val1 + '0') + ',' + (val2 + '0'); // Checksum
+        slaveMess=String(val1)+","+String(val2)+","+String(ascii_sum)+"?";
         strcpy(message,slaveMess.c_str());
         Wire.write(message);        //Transmit fish state
 }
