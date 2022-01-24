@@ -159,7 +159,7 @@ void loop() {
   
   
   if (Serial1.available() > 0) {  //if bytes available to read in the buffer
-    //Serial.println("I'm receiving: ");
+    Serial.println("I'm receiving: ");
     
     // waiting for the start bit 'P':
     while (incomingByte != 'R'){
@@ -173,7 +173,7 @@ void loop() {
         cmd[siglen] = incomingByte;
         siglen++;
         incomingByte = Serial1.read();
-        //Serial.print(incomingByte);
+        Serial.print(incomingByte);
       }
     }
     //Empty out buffer
@@ -196,8 +196,8 @@ void loop() {
 
       //In incoming communication message: array[0] is 'R' or 'U' or 'T' or 'P' - convert to string, array[1:] are the numbers - convert to integer
       w = String(cmd);
-      //Serial.print("w= ");
-      //Serial.println(w);
+      Serial.print("w= ");
+      Serial.println(w);
       char1 = String(w[0]);
       val1 = String(w.substring(1, 2)).toInt();
       char2 = String(w[2]);
@@ -391,9 +391,9 @@ void killswitch(){
    if (millis() - killTimer > 3000) {
     power=0;
     motor_Pwm = 0;
-    analogWrite(pwm_Pin1, motor_Pwm);
+    analogWrite(pwm_Pin1, 0);
     pos_Main = 0;
-    //Serial.println("Kill switch activated"); 
+    Serial.println("Kill switch activated"); 
   }
 }
 
