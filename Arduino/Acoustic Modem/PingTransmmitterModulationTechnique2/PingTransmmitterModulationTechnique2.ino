@@ -12,10 +12,10 @@
 // defines variables
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
-
-#define t0 2
-#define t1 4
-#define tGuard 4
+int multi=10;
+#define t0 20
+#define t1 60
+#define tGuard 60
 
 
 void setup() {
