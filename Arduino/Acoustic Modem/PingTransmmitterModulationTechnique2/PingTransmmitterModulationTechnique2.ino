@@ -13,10 +13,11 @@
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 
-#define t0 20
-#define t1 40
-#define tGuard 200
 char incomingByte;
+int multi=10;
+#define t0 20
+#define t1 60
+#define tGuard 60
 
 void setup() {
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT

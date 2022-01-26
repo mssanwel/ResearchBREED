@@ -16,6 +16,7 @@ int distance; // variable for the distance measurement
 void setup() {
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
+//  pinMode(A1, INPUT_PULLDOWN);
   Serial.begin(115200); // // Serial Communication is starting with 9600 of baudrate speed
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
@@ -24,7 +25,11 @@ void setup() {
 }
 void loop() {
 
-
+  if (Serial.available() > 0) {
+    int incomingByte = Serial.read();
+    Serial.print("I received ");
+    Serial.println(incomingByte, BIN);
+  }
 
   
   // Clears the trigPin condition
@@ -46,12 +51,16 @@ void loop() {
 //  Serial.println(" cm");
 
 int sigInVal = analogRead(A1);
-if (sigInVal<100){
-  Serial.println(1);
-}
-else{
-  Serial.println(0);
-}
+delay(1);
+Serial.print(millis());
+Serial.print(",");
+Serial.println(sigInVal);
+//if (sigInVal<100){
+//  Serial.println(1);
+//}
+//else{
+//  Serial.println(0);
+//}
 }
 
 void read(){
