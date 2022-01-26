@@ -51,7 +51,9 @@ void loop() {
 //  Serial.println(" cm");
 
 int sigInVal = analogRead(A1);
-delay(3);
+delay(1);
+Serial.print(millis());
+Serial.print(",");
 Serial.println(sigInVal);
 //if (sigInVal<100){
 //  Serial.println(1);
