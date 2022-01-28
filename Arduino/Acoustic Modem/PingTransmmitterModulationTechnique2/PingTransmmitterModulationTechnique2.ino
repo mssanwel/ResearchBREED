@@ -14,8 +14,8 @@ long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 int multi=10;
 #define t0 20
-#define t1 60
-#define tGuard 60
+#define t1 80
+#define tGuard 20
 
 
 void setup() {
@@ -60,7 +60,14 @@ void loop() {
 
 //  digitalWrite(trigPin, LOW);
 //  delayMicroseconds(t);
-  digitalWrite(trigPin, HIGH);// 1 Start Bit
+  digitalWrite(trigPin, HIGH);// 1
+  delay(t1);
+  digitalWrite(trigPin, LOW);
+  delay(tGuard);
+
+//  digitalWrite(trigPin, LOW);
+//  delayMicroseconds(t);
+  digitalWrite(trigPin, HIGH);// 1
   delay(t1);
   digitalWrite(trigPin, LOW);
   delay(tGuard);
@@ -88,21 +95,14 @@ void loop() {
 
 //  digitalWrite(trigPin, LOW);
 //  delayMicroseconds(t);
-  digitalWrite(trigPin, HIGH);// 1
-  delay(t1);
-  digitalWrite(trigPin, LOW);
-  delay(tGuard);
-
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(t);
-  digitalWrite(trigPin, LOW);// 0 Stop bit
+  digitalWrite(trigPin, LOW);// Stop
   delay(tGuard);
   digitalWrite(trigPin, LOW);
   delay(tGuard);
   
 //  digitalWrite(trigPin, LOW);
 //  delayMicroseconds(t);
-  digitalWrite(trigPin, LOW);// 0 Stop bit
+  digitalWrite(trigPin, LOW);// Stop
   delay(tGuard);
   digitalWrite(trigPin, LOW);
   delay(tGuard);
