@@ -39,4 +39,3 @@ with open('AcousticData.rtf') as csv_file:
     plt.plot(list(dataVal.keys())[2000:5000],avg1[2000:5000])
     plt.plot(list(dataVal.keys())[2000:5000],output[2000:5000])
     plt.show()
-    
