@@ -18,7 +18,6 @@ int multi=10;
 #define t0 20
 #define t1 40
 #define tGuard 80
->>>>>>> a682dec20a777d36624ddab9b9bf8cf8de505703
 
 void setup() {
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
@@ -54,7 +53,6 @@ void loop() {
   delay(t1);
   digitalWrite(trigPin, LOW);
   delay(tGuard);
-=======
 
   //  // Clears the trigPin condition
   //  digitalWrite(trigPin, LOW);
@@ -83,7 +81,7 @@ void loop() {
   //Clears the trigPin condition
   //  digitalWrite(trigPin, LOW);
   //  delayMicroseconds(tGuard);
->>>>>>> a682dec20a777d36624ddab9b9bf8cf8de505703
+
 
   for (int i = 0; i < 5000; i++) {
     digitalWrite(trigPin, HIGH);// 1 Start Bit
@@ -91,21 +89,11 @@ void loop() {
     digitalWrite(trigPin, LOW);
     delay(tGuard);
 
-<<<<<<< HEAD
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(t);
   digitalWrite(trigPin, HIGH);// 0
   delay(t0);
   digitalWrite(trigPin, LOW);
   delay(tGuard);
-=======
-    //  digitalWrite(trigPin, LOW);
-    //  delayMicroseconds(t);
-    digitalWrite(trigPin, HIGH);// 1 Start Bit
-    delay(t1);
-    digitalWrite(trigPin, LOW);
-    delay(tGuard);
->>>>>>> a682dec20a777d36624ddab9b9bf8cf8de505703
+
 
     for (int j = 6, l = 0; j >= 0; j--, l++) {
       int sig = bitRead(incomingByte, j);  //the bit to send
@@ -126,26 +114,11 @@ void loop() {
       delay(tGuard);
     }
 
-<<<<<<< HEAD
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(t);
-  digitalWrite(trigPin, LOW);// Stop
-  delay(tGuard);
-  digitalWrite(trigPin, LOW);
-  delay(tGuard);
-  
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(t);
-  digitalWrite(trigPin, LOW);// Stop
-  delay(tGuard);
-  digitalWrite(trigPin, LOW);
-  delay(tGuard);
-=======
+
     digitalWrite(trigPin, LOW);// 0 Stop bit
     delay(tGuard);
     digitalWrite(trigPin, LOW);
     delay(tGuard);
->>>>>>> a682dec20a777d36624ddab9b9bf8cf8de505703
 
     //  digitalWrite(trigPin, LOW);
     //  delayMicroseconds(t);
