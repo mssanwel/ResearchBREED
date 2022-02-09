@@ -39,7 +39,7 @@ void loop() {
   Serial.print("I received: ");
   Serial.println(incomingByte, BIN);
 
-<<<<<<< HEAD
+
 //  digitalWrite(trigPin, LOW);
 //  delayMicroseconds(t);
   digitalWrite(trigPin, HIGH);// 1
