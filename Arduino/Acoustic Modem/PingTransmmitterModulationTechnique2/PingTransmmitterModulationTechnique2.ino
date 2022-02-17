@@ -89,10 +89,10 @@ void loop() {
     digitalWrite(trigPin, LOW);
     delay(tGuard);
 
-  digitalWrite(trigPin, HIGH);// 0
-  delay(t0);
-  digitalWrite(trigPin, LOW);
-  delay(tGuard);
+    digitalWrite(trigPin, HIGH);// 0
+    delay(t0);
+    digitalWrite(trigPin, LOW);
+    delay(tGuard);
 
 
     for (int j = 6, l = 0; j >= 0; j--, l++) {
