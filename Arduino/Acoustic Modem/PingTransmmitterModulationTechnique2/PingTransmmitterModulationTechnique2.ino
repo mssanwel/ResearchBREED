@@ -12,12 +12,13 @@
 // defines variables
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
-
+int t = 20000;
 char incomingByte;
-int multi=10;
-#define t0 20
-#define t1 40
-#define tGuard 80
+int multi = 0.5;
+
+#define t0 2
+#define t1 4
+#define tGuard 8
 
 void setup() {
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
@@ -26,33 +27,30 @@ void setup() {
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
 }
+
+
 void loop() {
   //clear the buffer now
-  while (Serial.available()) {
-    Serial.print("Clearing the buffer: ");
-    Serial.println(Serial.read());
-  }
-  Serial.println("Waiting for serial input");
-  while (Serial.available() == 0) {} //Loop until serial command receieved
-  // read the incoming byte:
-  incomingByte = Serial.read();
-  Serial.print("I received: ");
-  Serial.println(incomingByte, BIN);
 
-
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(t);
-  digitalWrite(trigPin, HIGH);// 1
-  delay(t1);
-  digitalWrite(trigPin, LOW);
-  delay(tGuard);
-
-//  digitalWrite(trigPin, LOW);
-//  delayMicroseconds(t);
-  digitalWrite(trigPin, HIGH);// 1
-  delay(t1);
-  digitalWrite(trigPin, LOW);
-  delay(tGuard);
+  //  Serial.println("Waiting for serial input");
+  //  while (Serial.available() == 0) {} //Loop until serial command receieved
+  //  // read the incoming byte:
+  //  incomingByte = Serial.read();
+  //  Serial.print("I received: ");
+  //  Serial.println(incomingByte, BIN);
+  ////  digitalWrite(trigPin, LOW);
+  ////  delayMicroseconds(t);
+  //  digitalWrite(trigPin, HIGH);// 1
+  //  delay(t1);
+  //  digitalWrite(trigPin, LOW);
+  //  delay(tGuard);
+  //
+  ////  digitalWrite(trigPin, LOW);
+  ////  delayMicroseconds(t);
+  //  digitalWrite(trigPin, HIGH);// 1
+  //  delay(t1);
+  //  digitalWrite(trigPin, LOW);
+  //  delay(tGuard);
 
   //  // Clears the trigPin condition
   //  digitalWrite(trigPin, LOW);
@@ -77,24 +75,23 @@ void loop() {
   //  digitalWrite(trigPin, HIGH);
   //  delay(180);
   //  digitalWrite(trigPin, LOW);
-  int t = 20000;
   //Clears the trigPin condition
   //  digitalWrite(trigPin, LOW);
   //  delayMicroseconds(tGuard);
 
+  incomingByte = 'B';
 
   for (int i = 0; i < 5000; i++) {
+
+    //Start bit
     digitalWrite(trigPin, HIGH);// 1 Start Bit
     delay(t1);
     digitalWrite(trigPin, LOW);
     delay(tGuard);
 
-    digitalWrite(trigPin, HIGH);// 0
-    delay(t0);
-    digitalWrite(trigPin, LOW);
-    delay(tGuard);
+    //Message
 
-
+    int parityCount = 0;
     for (int j = 6, l = 0; j >= 0; j--, l++) {
       int sig = bitRead(incomingByte, j);  //the bit to send
       if (i == 0) {  //only print the first time
@@ -103,28 +100,47 @@ void loop() {
         Serial.print(" -> ");
         Serial.println(sig);
       }
-      digitalWrite(trigPin, sig);
+
+      digitalWrite(trigPin, HIGH);
       if (sig == 0) {
         delay(t0);
       }
       else {
         delay(t1);
+        parityCount++;
       }
-      digitalWrite(trigPin, !sig);
+
+      digitalWrite(trigPin, LOW);
       delay(tGuard);
     }
 
+    //Parity bit
+
+    if (parityCount % 2 == 0) {
+      digitalWrite(trigPin, HIGH);// 1 Parity Bit
+      delay(t1);
+      digitalWrite(trigPin, LOW);
+      delay(tGuard);
+    }
+    else {
+      digitalWrite(trigPin, HIGH);// 0 Parity Bit
+      delay(t0);
+      digitalWrite(trigPin, LOW);
+      delay(tGuard);
+    }
+
+    //Ending Guard
 
     digitalWrite(trigPin, LOW);// 0 Stop bit
     delay(tGuard);
     digitalWrite(trigPin, LOW);
     delay(tGuard);
 
-    //  digitalWrite(trigPin, LOW);
-    //  delayMicroseconds(t);
     digitalWrite(trigPin, LOW);// 0 Stop bit
     delay(tGuard);
     digitalWrite(trigPin, LOW);
     delay(tGuard);
   }
+
+
 }
